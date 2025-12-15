@@ -1,0 +1,156 @@
+# Discord Giveaway Bot - Cline Rules
+
+## Project Overview
+This is a Discord Giveaway Bot built with Python and discord.py. It features two modes: Management Console (admin commands) and User Mode (participant interactions).
+
+## Architecture Guidelines
+
+### Code Structure
+- **Models** (`src/models/`): Data classes using Python dataclasses, no external dependencies
+- **Services** (`src/services/`): Business logic, depend only on models and storage
+- **Cogs** (`src/cogs/`): Discord command handlers, depend on services
+- **UI** (`src/ui/`): Discord UI components (buttons, embeds)
+- **Utils** (`src/utils/`): Pure utility functions, easily testable
+
+### Design Principles
+- Keep Discord-specific code in cogs and UI modules
+- Services should be Discord-agnostic for easier testing
+- Use dependency injection for services (pass storage to constructors)
+- All database operations go through StorageService
+
+## Coding Standards
+
+### Python Style
+- Follow PEP 8 guidelines
+- Use type hints for all function parameters and return values
+- Use docstrings with Args/Returns format for public functions
+- Two blank lines between top-level definitions
+- Single blank line between method definitions in classes
+
+### Async Patterns
+- Use `async/await` for all I/O operations
+- Services are async by design
+- Use `aiosqlite` for database operations
+
+### Error Handling
+- Return `Tuple[bool, str]` for operations that can fail
+- Use logging for error tracking
+- Never expose raw exceptions to users
+
+## Testing Guidelines
+
+### Test Organization
+- Unit tests in `tests/unit/` - test individual components
+- Integration tests in `tests/integration/` - test database operations
+- Use pytest fixtures from `conftest.py`
+
+### Test Naming
+- Test files: `test_<module_name>.py`
+- Test classes: `Test<ClassName>`
+- Test methods: `test_<behavior_description>`
+
+### Fixtures
+- `storage_service` - Initialized async storage with temp database
+- `giveaway_service` - Service with storage attached
+- `sample_giveaway` - Pre-configured giveaway for testing
+
+## Commands Reference
+
+### Admin Commands (requires giveaway admin permission)
+- `/giveaway create` - Create a new giveaway
+- `/giveaway end` - End early and select winners
+- `/giveaway cancel` - Cancel without winners
+- `/giveaway reroll` - Select new winners
+- `/giveaway list` - View active giveaways
+- `/giveaway config` - Configure admin roles
+
+### User Commands
+- `/giveaways` - View active giveaways
+- `/myentries` - View entered giveaways
+
+## Database Schema
+
+### giveaways
+- id, guild_id, channel_id, message_id, prize, winner_count
+- required_role_id, created_by, created_at, scheduled_start
+- ends_at, ended, cancelled
+
+### entries
+- id, giveaway_id, user_id, entered_at
+
+### winners
+- id, giveaway_id, user_id, selected_at
+
+### guild_configs
+- guild_id, admin_role_ids (JSON), created_at
+
+## Development Workflow
+
+### Adding New Features
+1. Update models if new data structures needed
+2. Add storage methods for persistence
+3. Implement service logic
+4. Create cog commands
+5. Add UI components if needed
+6. Write tests
+
+### Running Tests
+```bash
+pytest                          # All tests
+pytest tests/unit/              # Unit only
+pytest --cov=src               # With coverage
+```
+
+### Linting
+```bash
+flake8 src tests
+mypy src
+```
+
+## Environment Variables
+- `DISCORD_BOT_TOKEN` - Required bot token
+- `DATABASE_PATH` - Optional, defaults to `data/giveaway.db`
+- `LOG_LEVEL` - Optional, defaults to `INFO`
+
+## Common Patterns
+
+### Permission Check
+```python
+async def _check_admin(self, interaction: discord.Interaction) -> bool:
+    guild_config = await self.storage.get_guild_config(interaction.guild.id)
+    return check_giveaway_admin(
+        user_permission_admin=member.guild_permissions.administrator,
+        user_role_ids=[role.id for role in member.roles],
+        guild_config=guild_config,
+    )
+```
+
+### Service Method Pattern
+```python
+async def some_operation(self, id: int) -> Tuple[bool, str]:
+    entity = await self.storage.get_entity(id)
+    if not entity:
+        return False, "Entity not found."
+    
+    # Perform operation
+    await self.storage.update_entity(entity)
+    
+    return True, "Operation completed successfully."
+```
+
+### Embed Creation
+```python
+embed = discord.Embed(
+    title="🎁 GIVEAWAY",
+    description=f"**{giveaway.prize}**",
+    color=discord.Color.green(),
+)
+embed.add_field(name="Field", value="Value", inline=True)
+```
+
+## Notes for AI Assistants
+- Always check existing patterns before adding new code
+- Services should not import discord directly
+- Use typing module for complex type hints
+- Test both success and failure cases
+- Update README.md when adding features
