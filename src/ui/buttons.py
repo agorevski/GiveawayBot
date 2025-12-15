@@ -3,6 +3,8 @@
 import discord
 from typing import Optional, TYPE_CHECKING
 
+from src.ui.embeds import create_giveaway_embed
+
 if TYPE_CHECKING:
     from src.services.giveaway_service import GiveawayService
 
@@ -51,11 +53,41 @@ class GiveawayEntryButton(discord.ui.Button):
                 f"✅ {message}",
                 ephemeral=True,
             )
+
+            # Update the giveaway embed with new entry count
+            await self._update_giveaway_embed(interaction, giveaway_service)
         else:
             await interaction.response.send_message(
                 f"❌ {message}",
                 ephemeral=True,
             )
+
+    async def _update_giveaway_embed(
+        self,
+        interaction: discord.Interaction,
+        giveaway_service: "GiveawayService",
+    ) -> None:
+        """Update the giveaway message embed with current entry count."""
+        giveaway = await giveaway_service.get_giveaway(self.giveaway_id)
+        if not giveaway or not interaction.message:
+            return
+
+        # Get host name for the embed
+        host_name = "Unknown"
+        if interaction.guild:
+            host = interaction.guild.get_member(giveaway.created_by)
+            if host:
+                host_name = host.display_name
+
+        # Get role name if required
+        role_name = None
+        if giveaway.required_role_id and interaction.guild:
+            role = interaction.guild.get_role(giveaway.required_role_id)
+            if role:
+                role_name = role.name
+
+        embed = create_giveaway_embed(giveaway, host_name, role_name)
+        await interaction.message.edit(embed=embed)
 
 
 class GiveawayLeaveButton(discord.ui.Button):
@@ -92,11 +124,41 @@ class GiveawayLeaveButton(discord.ui.Button):
                 f"✅ {message}",
                 ephemeral=True,
             )
+
+            # Update the giveaway embed with new entry count
+            await self._update_giveaway_embed(interaction, giveaway_service)
         else:
             await interaction.response.send_message(
                 f"❌ {message}",
                 ephemeral=True,
             )
+
+    async def _update_giveaway_embed(
+        self,
+        interaction: discord.Interaction,
+        giveaway_service: "GiveawayService",
+    ) -> None:
+        """Update the giveaway message embed with current entry count."""
+        giveaway = await giveaway_service.get_giveaway(self.giveaway_id)
+        if not giveaway or not interaction.message:
+            return
+
+        # Get host name for the embed
+        host_name = "Unknown"
+        if interaction.guild:
+            host = interaction.guild.get_member(giveaway.created_by)
+            if host:
+                host_name = host.display_name
+
+        # Get role name if required
+        role_name = None
+        if giveaway.required_role_id and interaction.guild:
+            role = interaction.guild.get_role(giveaway.required_role_id)
+            if role:
+                role_name = role.name
+
+        embed = create_giveaway_embed(giveaway, host_name, role_name)
+        await interaction.message.edit(embed=embed)
 
 
 class GiveawayEntryView(discord.ui.View):
