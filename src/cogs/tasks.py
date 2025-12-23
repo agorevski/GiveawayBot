@@ -69,8 +69,7 @@ class TasksCog(commands.Cog):
         for giveaway in giveaways_to_start:
             try:
                 # Clear scheduled_start to mark as started
-                giveaway.scheduled_start = None
-                await self.giveaway_service.storage.update_giveaway(giveaway)
+                await self.giveaway_service.start_scheduled_giveaway(giveaway)
 
                 # Get channel and send/update message
                 channel = self.bot.get_channel(giveaway.channel_id)

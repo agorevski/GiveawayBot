@@ -89,5 +89,5 @@ def sample_guild_config_dict():
     return {
         "guild_id": 123456789,
         "admin_role_ids": "[111111111, 222222222]",
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
     }

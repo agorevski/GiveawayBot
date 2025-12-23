@@ -221,3 +221,203 @@ class TestGiveawayServiceAsync:
 
         cancelled = await giveaway_service.get_giveaway(giveaway.id)
         assert cancelled.cancelled is True
+
+    @pytest.mark.asyncio
+    async def test_cancel_nonexistent_giveaway(self, giveaway_service):
+        """Test cancelling a non-existent giveaway."""
+        success, message = await giveaway_service.cancel_giveaway(99999)
+
+        assert success is False
+        assert "not found" in message.lower()
+
+    @pytest.mark.asyncio
+    async def test_cancel_already_ended_giveaway(self, giveaway_service):
+        """Test cancelling an already ended giveaway."""
+        giveaway = await giveaway_service.create_giveaway(
+            guild_id=123456789,
+            channel_id=987654321,
+            prize="Test Prize",
+            duration_seconds=3600,
+            created_by=111111111,
+        )
+
+        await giveaway_service.end_giveaway(giveaway.id)
+
+        success, message = await giveaway_service.cancel_giveaway(giveaway.id)
+
+        assert success is False
+        assert "already ended" in message.lower()
+
+    @pytest.mark.asyncio
+    async def test_leave_giveaway(self, giveaway_service):
+        """Test leaving a giveaway."""
+        giveaway = await giveaway_service.create_giveaway(
+            guild_id=123456789,
+            channel_id=987654321,
+            prize="Test Prize",
+            duration_seconds=3600,
+            created_by=111111111,
+        )
+
+        await giveaway_service.enter_giveaway(giveaway.id, 222222222, [])
+
+        success, message = await giveaway_service.leave_giveaway(giveaway.id, 222222222)
+
+        assert success is True
+        assert "removed" in message.lower()
+
+    @pytest.mark.asyncio
+    async def test_leave_giveaway_not_entered(self, giveaway_service):
+        """Test leaving a giveaway when not entered."""
+        giveaway = await giveaway_service.create_giveaway(
+            guild_id=123456789,
+            channel_id=987654321,
+            prize="Test Prize",
+            duration_seconds=3600,
+            created_by=111111111,
+        )
+
+        success, message = await giveaway_service.leave_giveaway(giveaway.id, 222222222)
+
+        assert success is False
+
+    @pytest.mark.asyncio
+    async def test_leave_nonexistent_giveaway(self, giveaway_service):
+        """Test leaving a non-existent giveaway."""
+        success, message = await giveaway_service.leave_giveaway(99999, 222222222)
+
+        assert success is False
+        assert "not found" in message.lower()
+
+    @pytest.mark.asyncio
+    async def test_enter_nonexistent_giveaway(self, giveaway_service):
+        """Test entering a non-existent giveaway."""
+        success, message = await giveaway_service.enter_giveaway(99999, 222222222, [])
+
+        assert success is False
+        assert "not found" in message.lower()
+
+    @pytest.mark.asyncio
+    async def test_enter_ended_giveaway(self, giveaway_service):
+        """Test entering an ended giveaway."""
+        giveaway = await giveaway_service.create_giveaway(
+            guild_id=123456789,
+            channel_id=987654321,
+            prize="Test Prize",
+            duration_seconds=3600,
+            created_by=111111111,
+        )
+
+        await giveaway_service.end_giveaway(giveaway.id)
+
+        success, message = await giveaway_service.enter_giveaway(giveaway.id, 222222222, [])
+
+        assert success is False
+        assert "ended" in message.lower()
+
+    @pytest.mark.asyncio
+    async def test_end_nonexistent_giveaway(self, giveaway_service):
+        """Test ending a non-existent giveaway."""
+        result = await giveaway_service.end_giveaway(99999)
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_set_message_id(self, giveaway_service):
+        """Test setting message ID on a giveaway."""
+        giveaway = await giveaway_service.create_giveaway(
+            guild_id=123456789,
+            channel_id=987654321,
+            prize="Test Prize",
+            duration_seconds=3600,
+            created_by=111111111,
+        )
+
+        await giveaway_service.set_message_id(giveaway, 555555555)
+
+        retrieved = await giveaway_service.get_giveaway(giveaway.id)
+        assert retrieved.message_id == 555555555
+
+    @pytest.mark.asyncio
+    async def test_get_active_giveaways(self, giveaway_service):
+        """Test getting active giveaways."""
+        guild_id = 123456789
+
+        await giveaway_service.create_giveaway(
+            guild_id=guild_id,
+            channel_id=987654321,
+            prize="Active 1",
+            duration_seconds=3600,
+            created_by=111111111,
+        )
+        await giveaway_service.create_giveaway(
+            guild_id=guild_id,
+            channel_id=987654321,
+            prize="Active 2",
+            duration_seconds=3600,
+            created_by=111111111,
+        )
+
+        active = await giveaway_service.get_active_giveaways(guild_id)
+
+        assert len(active) >= 2
+
+    @pytest.mark.asyncio
+    async def test_get_giveaway_by_message(self, giveaway_service):
+        """Test getting a giveaway by message ID."""
+        giveaway = await giveaway_service.create_giveaway(
+            guild_id=123456789,
+            channel_id=987654321,
+            prize="Test Prize",
+            duration_seconds=3600,
+            created_by=111111111,
+        )
+
+        await giveaway_service.set_message_id(giveaway, 555555555)
+
+        retrieved = await giveaway_service.get_giveaway_by_message(555555555)
+
+        assert retrieved is not None
+        assert retrieved.id == giveaway.id
+
+    @pytest.mark.asyncio
+    async def test_start_scheduled_giveaway(self, giveaway_service):
+        """Test starting a scheduled giveaway."""
+        from datetime import datetime, timedelta, timezone
+
+        giveaway = await giveaway_service.create_giveaway(
+            guild_id=123456789,
+            channel_id=987654321,
+            prize="Test Prize",
+            duration_seconds=3600,
+            created_by=111111111,
+            scheduled_start=datetime.now(timezone.utc) + timedelta(hours=1),
+        )
+
+        assert giveaway.scheduled_start is not None
+
+        await giveaway_service.start_scheduled_giveaway(giveaway)
+
+        retrieved = await giveaway_service.get_giveaway(giveaway.id)
+        assert retrieved.scheduled_start is None
+
+    @pytest.mark.asyncio
+    async def test_create_giveaway_with_scheduled_start(self, giveaway_service):
+        """Test creating a giveaway with scheduled start."""
+        from datetime import datetime, timedelta, timezone
+
+        scheduled = datetime.now(timezone.utc) + timedelta(hours=2)
+
+        giveaway = await giveaway_service.create_giveaway(
+            guild_id=123456789,
+            channel_id=987654321,
+            prize="Test Prize",
+            duration_seconds=3600,
+            created_by=111111111,
+            scheduled_start=scheduled,
+        )
+
+        assert giveaway.scheduled_start is not None
+        # ends_at should be scheduled_start + duration
+        expected_end = scheduled + timedelta(seconds=3600)
+        assert abs((giveaway.ends_at - expected_end).total_seconds()) < 1

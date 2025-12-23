@@ -191,6 +191,11 @@ class GiveawayService:
         """Get all active giveaways a user has entered in a guild."""
         return await self.storage.get_user_entries(guild_id, user_id)
 
+    async def start_scheduled_giveaway(self, giveaway: Giveaway) -> None:
+        """Start a scheduled giveaway by clearing its scheduled_start time."""
+        giveaway.scheduled_start = None
+        await self.storage.update_giveaway(giveaway)
+
     @staticmethod
     def parse_duration(duration_str: str) -> Optional[int]:
         """Parse a duration string into seconds.
