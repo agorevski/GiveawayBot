@@ -1,7 +1,7 @@
 """Giveaway data model."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, List
 
@@ -31,7 +31,7 @@ class Giveaway:
     message_id: Optional[int] = None
     winner_count: int = 1
     required_role_id: Optional[int] = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     scheduled_start: Optional[datetime] = None
     ended: bool = False
     cancelled: bool = False
@@ -47,7 +47,7 @@ class Giveaway:
             return GiveawayStatus.CANCELLED
         if self.ended:
             return GiveawayStatus.ENDED
-        if self.scheduled_start and datetime.utcnow() < self.scheduled_start:
+        if self.scheduled_start and datetime.now(timezone.utc) < self.scheduled_start:
             return GiveawayStatus.SCHEDULED
         return GiveawayStatus.ACTIVE
 
@@ -64,7 +64,7 @@ class Giveaway:
     @property
     def should_end(self) -> bool:
         """Check if the giveaway should be ended (past end time)."""
-        return self.is_active and datetime.utcnow() >= self.ends_at
+        return self.is_active and datetime.now(timezone.utc) >= self.ends_at
 
     @property
     def should_start(self) -> bool:
@@ -73,14 +73,14 @@ class Giveaway:
             return False
         if self.scheduled_start is None:
             return False
-        return datetime.utcnow() >= self.scheduled_start
+        return datetime.now(timezone.utc) >= self.scheduled_start
 
     @property
     def time_remaining(self) -> Optional[float]:
         """Get seconds remaining until giveaway ends. None if ended."""
         if self.is_ended:
             return None
-        remaining = (self.ends_at - datetime.utcnow()).total_seconds()
+        remaining = (self.ends_at - datetime.now(timezone.utc)).total_seconds()
         return max(0, remaining)
 
     @property
@@ -120,11 +120,11 @@ class Giveaway:
             winner_count=data.get("winner_count", 1),
             required_role_id=data.get("required_role_id"),
             created_by=data["created_by"],
-            created_at=_parse_datetime(data.get("created_at")) or datetime.utcnow(),
+            created_at=_parse_datetime(data.get("created_at")) or datetime.now(timezone.utc),
             scheduled_start=_parse_datetime(data.get("scheduled_start")),
-            ends_at=_parse_datetime(data["ends_at"]) or datetime.utcnow(),
-            ended=data.get("ended", False),
-            cancelled=data.get("cancelled", False),
+            ends_at=_parse_datetime(data["ends_at"]) or datetime.now(timezone.utc),
+            ended=bool(data.get("ended", False)),
+            cancelled=bool(data.get("cancelled", False)),
         )
 
 

@@ -1,13 +1,17 @@
 """Admin cog for giveaway management commands."""
 
+import logging
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional
 
+from src.models.giveaway import Giveaway
 from src.services.giveaway_service import GiveawayService
 from src.services.winner_service import WinnerService
 from src.services.storage_service import StorageService
+from src.services.message_service import GiveawayMessageService
 from src.utils.permissions import check_giveaway_admin
 from src.utils.validators import (
     validate_winner_count,
@@ -16,11 +20,12 @@ from src.utils.validators import (
 )
 from src.ui.embeds import (
     create_giveaway_embed,
-    create_ended_embed,
     create_cancelled_embed,
     create_list_embed,
 )
 from src.ui.buttons import GiveawayEntryView, EndedGiveawayView
+
+logger = logging.getLogger(__name__)
 
 
 class AdminCog(commands.Cog):
@@ -32,11 +37,13 @@ class AdminCog(commands.Cog):
         giveaway_service: GiveawayService,
         winner_service: WinnerService,
         storage: StorageService,
+        message_service: GiveawayMessageService,
     ):
         self.bot = bot
         self.giveaway_service = giveaway_service
         self.winner_service = winner_service
         self.storage = storage
+        self.message_service = message_service
 
     async def _check_admin(self, interaction: discord.Interaction) -> bool:
         """Check if user has admin permissions."""
@@ -199,10 +206,12 @@ class AdminCog(commands.Cog):
         winners = await self.winner_service.select_winners(giveaway, valid_user_ids)
 
         # Update the original message
-        await self._update_giveaway_message(giveaway, winners)
+        await self.message_service.update_giveaway_message(giveaway, winners)
 
         # Announce winners
-        await self._announce_winners(giveaway, winners)
+        channel = self.bot.get_channel(giveaway.channel_id)
+        if isinstance(channel, discord.TextChannel):
+            await self.message_service.announce_winners(giveaway, winners, channel)
 
         winner_text = (
             ", ".join(f"<@{uid}>" for uid in winners) if winners else "No winners"
@@ -252,7 +261,7 @@ class AdminCog(commands.Cog):
                     )
                     await msg.edit(embed=embed, view=EndedGiveawayView())
             except discord.NotFound:
-                pass
+                logger.warning(f"Message {giveaway.message_id} not found - may have been deleted")
 
         await interaction.followup.send("✅ Giveaway cancelled.", ephemeral=True)
 
@@ -419,68 +428,6 @@ class AdminCog(commands.Cog):
                     ephemeral=True,
                 )
 
-    async def _update_giveaway_message(
-        self,
-        giveaway,
-        winners: list,
-    ) -> None:
-        """Update the giveaway message with ended status."""
-        if not giveaway.message_id:
-            return
-
-        try:
-            channel = self.bot.get_channel(giveaway.channel_id)
-            if not isinstance(channel, discord.TextChannel):
-                return
-
-            message = await channel.fetch_message(giveaway.message_id)
-
-            # Get host name
-            try:
-                host = await self.bot.fetch_user(giveaway.created_by)
-                host_name = host.display_name
-            except discord.NotFound:
-                host_name = "Unknown"
-
-            embed = create_ended_embed(giveaway, winners, host_name)
-            await message.edit(embed=embed, view=EndedGiveawayView())
-        except discord.NotFound:
-            pass
-
-    async def _announce_winners(
-        self,
-        giveaway,
-        winners: list,
-    ) -> None:
-        """Announce winners and attempt to DM them."""
-        if not winners:
-            return
-
-        channel = self.bot.get_channel(giveaway.channel_id)
-        if not isinstance(channel, discord.TextChannel):
-            return
-
-        # Public announcement
-        winner_mentions = ", ".join(f"<@{uid}>" for uid in winners)
-        await channel.send(
-            f"🎉 Congratulations {winner_mentions}! "
-            f"You won the giveaway for **{giveaway.prize}**!"
-        )
-
-        # DM winners
-        guild = channel.guild
-        for winner_id in winners:
-            try:
-                user = await self.bot.fetch_user(winner_id)
-                dm_message = self.winner_service.format_dm_message(
-                    giveaway.prize,
-                    guild.name,
-                )
-                await user.send(dm_message)
-            except (discord.Forbidden, discord.NotFound):
-                # User has DMs disabled or doesn't exist
-                pass
-
 
 async def setup(bot: commands.Bot) -> None:
     """Setup function for loading the cog."""
@@ -489,6 +436,11 @@ async def setup(bot: commands.Bot) -> None:
     storage = getattr(bot, "storage", None)
     giveaway_service = getattr(bot, "giveaway_service", None)
     winner_service = getattr(bot, "winner_service", None)
+    message_service = getattr(bot, "message_service", None)
 
-    if storage and giveaway_service and winner_service:
-        await bot.add_cog(AdminCog(bot, giveaway_service, winner_service, storage))
+    if storage and giveaway_service and winner_service and message_service:
+        await bot.add_cog(
+            AdminCog(
+                bot, giveaway_service, winner_service, storage, message_service
+            )
+        )

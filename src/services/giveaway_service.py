@@ -1,6 +1,6 @@
 """Giveaway service for business logic."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
 from src.models.giveaway import Giveaway, GiveawayStatus
@@ -48,7 +48,7 @@ class GiveawayService:
         if scheduled_start:
             ends_at = scheduled_start + timedelta(seconds=duration_seconds)
         else:
-            ends_at = datetime.utcnow() + timedelta(seconds=duration_seconds)
+            ends_at = datetime.now(timezone.utc) + timedelta(seconds=duration_seconds)
 
         giveaway = Giveaway(
             guild_id=guild_id,
@@ -191,7 +191,8 @@ class GiveawayService:
         """Get all active giveaways a user has entered in a guild."""
         return await self.storage.get_user_entries(guild_id, user_id)
 
-    def parse_duration(self, duration_str: str) -> Optional[int]:
+    @staticmethod
+    def parse_duration(duration_str: str) -> Optional[int]:
         """Parse a duration string into seconds.
 
         Supports formats like:

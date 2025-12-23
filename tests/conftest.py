@@ -3,7 +3,7 @@
 import pytest
 import tempfile
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.models.giveaway import Giveaway
 from src.models.guild_config import GuildConfig
@@ -47,7 +47,7 @@ def sample_giveaway():
         guild_id=123456789,
         channel_id=987654321,
         prize="Test Prize",
-        ends_at=datetime.utcnow() + timedelta(hours=1),
+        ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
         created_by=111111111,
         winner_count=1,
     )
@@ -56,7 +56,7 @@ def sample_giveaway():
 @pytest.fixture
 def sample_giveaway_dict():
     """Create a sample giveaway dictionary for testing."""
-    ends_at = datetime.utcnow() + timedelta(hours=1)
+    ends_at = datetime.now(timezone.utc) + timedelta(hours=1)
     return {
         "id": 1,
         "guild_id": 123456789,
@@ -66,7 +66,7 @@ def sample_giveaway_dict():
         "winner_count": 2,
         "required_role_id": 444444444,
         "created_by": 111111111,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "scheduled_start": None,
         "ends_at": ends_at.isoformat(),
         "ended": False,

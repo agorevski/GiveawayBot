@@ -1,15 +1,23 @@
 """Background tasks cog for automated giveaway management."""
 
+import aiosqlite
 import discord
 from discord.ext import commands, tasks
 import logging
+from typing import List
 
+from src.models.giveaway import Giveaway
 from src.services.giveaway_service import GiveawayService
 from src.services.winner_service import WinnerService
-from src.ui.embeds import create_ended_embed, create_giveaway_embed
-from src.ui.buttons import GiveawayEntryView, EndedGiveawayView
+from src.services.message_service import GiveawayMessageService
+from src.config import Config
+from src.ui.embeds import create_giveaway_embed
+from src.ui.buttons import GiveawayEntryView
 
 logger = logging.getLogger(__name__)
+
+# Default interval used by decorator, will be updated from config in __init__
+_DEFAULT_CHECK_INTERVAL = 30
 
 
 class TasksCog(commands.Cog):
@@ -20,10 +28,14 @@ class TasksCog(commands.Cog):
         bot: commands.Bot,
         giveaway_service: GiveawayService,
         winner_service: WinnerService,
+        message_service: GiveawayMessageService,
+        config: Config,
     ):
         self.bot = bot
         self.giveaway_service = giveaway_service
         self.winner_service = winner_service
+        self.message_service = message_service
+        self.check_giveaways.change_interval(seconds=config.giveaway_check_interval)
 
     async def cog_load(self) -> None:
         """Start background tasks when cog is loaded."""
@@ -33,7 +45,7 @@ class TasksCog(commands.Cog):
         """Stop background tasks when cog is unloaded."""
         self.check_giveaways.cancel()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=_DEFAULT_CHECK_INTERVAL)
     async def check_giveaways(self) -> None:
         """Check for giveaways that need to start or end."""
         try:
@@ -42,7 +54,7 @@ class TasksCog(commands.Cog):
 
             # Check for giveaways that should end
             await self._check_ending_giveaways()
-        except Exception as e:
+        except (discord.DiscordException, aiosqlite.Error) as e:
             logger.error(f"Error in check_giveaways task: {e}")
 
     @check_giveaways.before_loop
@@ -106,7 +118,7 @@ class TasksCog(commands.Cog):
                 )
 
                 logger.info(f"Started scheduled giveaway {giveaway.id}")
-            except Exception as e:
+            except (discord.DiscordException, aiosqlite.Error) as e:
                 logger.error(f"Error starting giveaway {giveaway.id}: {e}")
 
     async def _check_ending_giveaways(self) -> None:
@@ -137,82 +149,30 @@ class TasksCog(commands.Cog):
                 )
 
                 # Update the giveaway message
-                await self._update_ended_message(ended_giveaway, winners, channel)
+                await self.message_service.update_giveaway_message(
+                    ended_giveaway, winners
+                )
 
                 # Announce winners
-                await self._announce_winners(ended_giveaway, winners, channel)
+                await self.message_service.announce_winners(
+                    ended_giveaway, winners, channel
+                )
 
                 logger.info(
                     f"Ended giveaway {giveaway.id} with {len(winners)} winner(s)"
                 )
-            except Exception as e:
+            except (discord.DiscordException, aiosqlite.Error) as e:
                 logger.error(f"Error ending giveaway {giveaway.id}: {e}")
-
-    async def _update_ended_message(
-        self,
-        giveaway,
-        winners: list,
-        channel: discord.TextChannel,
-    ) -> None:
-        """Update the giveaway message to show it has ended."""
-        if not giveaway.message_id:
-            return
-
-        try:
-            message = await channel.fetch_message(giveaway.message_id)
-
-            # Get host name
-            try:
-                host = await self.bot.fetch_user(giveaway.created_by)
-                host_name = host.display_name
-            except discord.NotFound:
-                host_name = "Unknown"
-
-            embed = create_ended_embed(giveaway, winners, host_name)
-            await message.edit(embed=embed, view=EndedGiveawayView())
-        except discord.NotFound:
-            pass
-
-    async def _announce_winners(
-        self,
-        giveaway,
-        winners: list,
-        channel: discord.TextChannel,
-    ) -> None:
-        """Announce winners and DM them."""
-        if not winners:
-            await channel.send(
-                f"🎉 The giveaway for **{giveaway.prize}** has ended!\n"
-                "No valid entries - no winner could be selected."
-            )
-            return
-
-        # Public announcement
-        winner_mentions = ", ".join(f"<@{uid}>" for uid in winners)
-        await channel.send(
-            f"🎉 Congratulations {winner_mentions}! "
-            f"You won the giveaway for **{giveaway.prize}**!"
-        )
-
-        # DM winners
-        guild = channel.guild
-        for winner_id in winners:
-            try:
-                user = await self.bot.fetch_user(winner_id)
-                dm_message = self.winner_service.format_dm_message(
-                    giveaway.prize,
-                    guild.name,
-                )
-                await user.send(dm_message)
-            except (discord.Forbidden, discord.NotFound):
-                # User has DMs disabled or doesn't exist
-                pass
 
 
 async def setup(bot: commands.Bot) -> None:
     """Setup function for loading the cog."""
     giveaway_service = getattr(bot, "giveaway_service", None)
     winner_service = getattr(bot, "winner_service", None)
+    message_service = getattr(bot, "message_service", None)
+    config = getattr(bot, "config", None)
 
-    if giveaway_service and winner_service:
-        await bot.add_cog(TasksCog(bot, giveaway_service, winner_service))
+    if giveaway_service and winner_service and message_service and config:
+        await bot.add_cog(
+            TasksCog(bot, giveaway_service, winner_service, message_service, config)
+        )

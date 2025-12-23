@@ -1,7 +1,7 @@
 """Integration tests for the StorageService."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from src.models.giveaway import Giveaway
 from src.models.guild_config import GuildConfig
@@ -17,7 +17,7 @@ class TestStorageServiceGiveaways:
             guild_id=123456789,
             channel_id=987654321,
             prize="Test Prize",
-            ends_at=datetime.utcnow() + timedelta(hours=1),
+            ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
             created_by=111111111,
         )
 
@@ -36,7 +36,7 @@ class TestStorageServiceGiveaways:
             guild_id=123456789,
             channel_id=987654321,
             prize="Original Prize",
-            ends_at=datetime.utcnow() + timedelta(hours=1),
+            ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
             created_by=111111111,
         )
 
@@ -60,7 +60,7 @@ class TestStorageServiceGiveaways:
             guild_id=guild_id,
             channel_id=987654321,
             prize="Active Giveaway",
-            ends_at=datetime.utcnow() + timedelta(hours=1),
+            ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
             created_by=111111111,
         )
         await storage_service.create_giveaway(active)
@@ -70,7 +70,7 @@ class TestStorageServiceGiveaways:
             guild_id=guild_id,
             channel_id=987654321,
             prize="Ended Giveaway",
-            ends_at=datetime.utcnow() + timedelta(hours=1),
+            ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
             created_by=111111111,
             ended=True,
         )
@@ -88,7 +88,7 @@ class TestStorageServiceGiveaways:
             guild_id=123456789,
             channel_id=987654321,
             prize="Test Prize",
-            ends_at=datetime.utcnow() + timedelta(hours=1),
+            ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
             created_by=111111111,
         )
         saved = await storage_service.create_giveaway(giveaway)
@@ -111,7 +111,7 @@ class TestStorageServiceGiveaways:
             guild_id=123456789,
             channel_id=987654321,
             prize="Test Prize",
-            ends_at=datetime.utcnow() + timedelta(hours=1),
+            ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
             created_by=111111111,
         )
         saved = await storage_service.create_giveaway(giveaway)
@@ -132,15 +132,15 @@ class TestStorageServiceGiveaways:
             guild_id=123456789,
             channel_id=987654321,
             prize="Test Prize",
-            ends_at=datetime.utcnow() + timedelta(hours=1),
+            ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
             created_by=111111111,
         )
         saved = await storage_service.create_giveaway(giveaway)
 
         await storage_service.add_entry(saved.id, 222222222)
 
-        assert await storage_service.has_entry(saved.id, 222222222) is True
-        assert await storage_service.has_entry(saved.id, 333333333) is False
+        assert await storage_service.has_entered(saved.id, 222222222) is True
+        assert await storage_service.has_entered(saved.id, 333333333) is False
 
     @pytest.mark.asyncio
     async def test_add_winners(self, storage_service):
@@ -149,7 +149,7 @@ class TestStorageServiceGiveaways:
             guild_id=123456789,
             channel_id=987654321,
             prize="Test Prize",
-            ends_at=datetime.utcnow() + timedelta(hours=1),
+            ends_at=datetime.now(timezone.utc) + timedelta(hours=1),
             created_by=111111111,
         )
         saved = await storage_service.create_giveaway(giveaway)

@@ -1,7 +1,7 @@
 """Embed builders for giveaway displays."""
 
 import discord
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 
 from src.models.giveaway import Giveaway, GiveawayStatus
@@ -62,7 +62,7 @@ def create_giveaway_embed(
     # Time remaining
     if giveaway.status == GiveawayStatus.SCHEDULED and giveaway.scheduled_start:
         time_until_start = (
-            giveaway.scheduled_start - datetime.utcnow()
+            giveaway.scheduled_start - datetime.now(timezone.utc)
         ).total_seconds()
         embed.add_field(
             name="Starts In",
@@ -144,7 +144,7 @@ def create_ended_embed(
     )
 
     embed.set_footer(text=f"Hosted by {host_name} • ID: {giveaway.id}")
-    embed.timestamp = datetime.utcnow()
+    embed.timestamp = datetime.now(timezone.utc)
 
     return embed
 
@@ -175,7 +175,7 @@ def create_cancelled_embed(
     )
 
     embed.set_footer(text=f"Hosted by {host_name} • ID: {giveaway.id}")
-    embed.timestamp = datetime.utcnow()
+    embed.timestamp = datetime.now(timezone.utc)
 
     return embed
 

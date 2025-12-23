@@ -10,77 +10,59 @@ class TestParseDuration:
 
     def test_parse_seconds(self):
         """Test parsing seconds."""
-        service = GiveawayService(None)  # Storage not needed for this test
-
-        assert service.parse_duration("30s") == 30
-        assert service.parse_duration("30sec") == 30
-        assert service.parse_duration("30 seconds") == 30
-        assert service.parse_duration("1 second") == 1
+        assert GiveawayService.parse_duration("30s") == 30
+        assert GiveawayService.parse_duration("30sec") == 30
+        assert GiveawayService.parse_duration("30 seconds") == 30
+        assert GiveawayService.parse_duration("1 second") == 1
 
     def test_parse_minutes(self):
         """Test parsing minutes."""
-        service = GiveawayService(None)
-
-        assert service.parse_duration("5m") == 300
-        assert service.parse_duration("5min") == 300
-        assert service.parse_duration("5 minutes") == 300
-        assert service.parse_duration("1 minute") == 60
+        assert GiveawayService.parse_duration("5m") == 300
+        assert GiveawayService.parse_duration("5min") == 300
+        assert GiveawayService.parse_duration("5 minutes") == 300
+        assert GiveawayService.parse_duration("1 minute") == 60
 
     def test_parse_hours(self):
         """Test parsing hours."""
-        service = GiveawayService(None)
-
-        assert service.parse_duration("2h") == 7200
-        assert service.parse_duration("2hr") == 7200
-        assert service.parse_duration("2 hours") == 7200
-        assert service.parse_duration("1 hour") == 3600
+        assert GiveawayService.parse_duration("2h") == 7200
+        assert GiveawayService.parse_duration("2hr") == 7200
+        assert GiveawayService.parse_duration("2 hours") == 7200
+        assert GiveawayService.parse_duration("1 hour") == 3600
 
     def test_parse_days(self):
         """Test parsing days."""
-        service = GiveawayService(None)
-
-        assert service.parse_duration("1d") == 86400
-        assert service.parse_duration("1 day") == 86400
-        assert service.parse_duration("7 days") == 604800
+        assert GiveawayService.parse_duration("1d") == 86400
+        assert GiveawayService.parse_duration("1 day") == 86400
+        assert GiveawayService.parse_duration("7 days") == 604800
 
     def test_parse_weeks(self):
         """Test parsing weeks."""
-        service = GiveawayService(None)
-
-        assert service.parse_duration("1w") == 604800
-        assert service.parse_duration("1 week") == 604800
-        assert service.parse_duration("2 weeks") == 1209600
+        assert GiveawayService.parse_duration("1w") == 604800
+        assert GiveawayService.parse_duration("1 week") == 604800
+        assert GiveawayService.parse_duration("2 weeks") == 1209600
 
     def test_parse_combined(self):
         """Test parsing combined durations."""
-        service = GiveawayService(None)
-
-        assert service.parse_duration("1d2h") == 86400 + 7200
-        assert service.parse_duration("1d 2h 30m") == 86400 + 7200 + 1800
-        assert service.parse_duration("1h30m") == 3600 + 1800
+        assert GiveawayService.parse_duration("1d2h") == 86400 + 7200
+        assert GiveawayService.parse_duration("1d 2h 30m") == 86400 + 7200 + 1800
+        assert GiveawayService.parse_duration("1h30m") == 3600 + 1800
 
     def test_parse_number_only(self):
         """Test parsing plain numbers (assumed to be minutes)."""
-        service = GiveawayService(None)
-
-        assert service.parse_duration("30") == 1800  # 30 minutes
-        assert service.parse_duration("60") == 3600  # 60 minutes
+        assert GiveawayService.parse_duration("30") == 1800  # 30 minutes
+        assert GiveawayService.parse_duration("60") == 3600  # 60 minutes
 
     def test_parse_invalid(self):
         """Test parsing invalid duration strings."""
-        service = GiveawayService(None)
-
-        assert service.parse_duration("") is None
-        assert service.parse_duration("invalid") is None
-        assert service.parse_duration("abc123") is None
+        assert GiveawayService.parse_duration("") is None
+        assert GiveawayService.parse_duration("invalid") is None
+        assert GiveawayService.parse_duration("abc123") is None
 
     def test_parse_case_insensitive(self):
         """Test that parsing is case insensitive."""
-        service = GiveawayService(None)
-
-        assert service.parse_duration("1H") == 3600
-        assert service.parse_duration("1D") == 86400
-        assert service.parse_duration("1 HOUR") == 3600
+        assert GiveawayService.parse_duration("1H") == 3600
+        assert GiveawayService.parse_duration("1D") == 86400
+        assert GiveawayService.parse_duration("1 HOUR") == 3600
 
 class TestGiveawayServiceAsync:
     """Async tests for the GiveawayService."""

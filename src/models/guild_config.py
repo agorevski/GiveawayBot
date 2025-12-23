@@ -2,7 +2,7 @@
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 
@@ -12,7 +12,7 @@ class GuildConfig:
 
     guild_id: int
     admin_role_ids: List[int] = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def add_admin_role(self, role_id: int) -> bool:
         """Add an admin role. Returns True if added, False if already exists."""
@@ -51,7 +51,7 @@ class GuildConfig:
         if isinstance(created_at, str):
             created_at = datetime.fromisoformat(created_at)
         elif created_at is None:
-            created_at = datetime.utcnow()
+            created_at = datetime.now(timezone.utc)
 
         return cls(
             guild_id=data["guild_id"],
