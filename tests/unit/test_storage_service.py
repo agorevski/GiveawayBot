@@ -334,3 +334,322 @@ class TestGuildConfigOperations:
         retrieved = await storage_service.get_guild_config(123456789)
         assert len(retrieved.admin_role_ids) == 2
         assert 222222222 in retrieved.admin_role_ids
+
+
+class TestRuntimeErrors:
+    """Tests for RuntimeError when database not initialized."""
+
+    @pytest.mark.asyncio
+    async def test_create_tables_not_initialized(self, tmp_path):
+        """Test _create_tables raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage._create_tables()
+
+    @pytest.mark.asyncio
+    async def test_create_giveaway_not_initialized(self, tmp_path, sample_giveaway):
+        """Test create_giveaway raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.create_giveaway(sample_giveaway)
+
+    @pytest.mark.asyncio
+    async def test_get_giveaway_not_initialized(self, tmp_path):
+        """Test get_giveaway raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.get_giveaway(1)
+
+    @pytest.mark.asyncio
+    async def test_get_giveaway_by_message_not_initialized(self, tmp_path):
+        """Test get_giveaway_by_message raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.get_giveaway_by_message(1)
+
+    @pytest.mark.asyncio
+    async def test_get_active_giveaways_not_initialized(self, tmp_path):
+        """Test get_active_giveaways raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.get_active_giveaways()
+
+    @pytest.mark.asyncio
+    async def test_get_scheduled_giveaways_not_initialized(self, tmp_path):
+        """Test get_scheduled_giveaways raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.get_scheduled_giveaways()
+
+    @pytest.mark.asyncio
+    async def test_update_giveaway_not_initialized(self, tmp_path, sample_giveaway):
+        """Test update_giveaway raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.update_giveaway(sample_giveaway)
+
+    @pytest.mark.asyncio
+    async def test_delete_giveaway_not_initialized(self, tmp_path):
+        """Test delete_giveaway raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.delete_giveaway(1)
+
+    @pytest.mark.asyncio
+    async def test_add_entry_not_initialized(self, tmp_path):
+        """Test add_entry raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.add_entry(1, 123)
+
+    @pytest.mark.asyncio
+    async def test_remove_entry_not_initialized(self, tmp_path):
+        """Test remove_entry raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.remove_entry(1, 123)
+
+    @pytest.mark.asyncio
+    async def test_get_entries_not_initialized(self, tmp_path):
+        """Test get_entries raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.get_entries(1)
+
+    @pytest.mark.asyncio
+    async def test_has_entered_not_initialized(self, tmp_path):
+        """Test has_entered raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.has_entered(1, 123)
+
+    @pytest.mark.asyncio
+    async def test_get_user_entries_not_initialized(self, tmp_path):
+        """Test get_user_entries raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.get_user_entries(1, 123)
+
+    @pytest.mark.asyncio
+    async def test_add_winner_not_initialized(self, tmp_path):
+        """Test add_winner raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.add_winner(1, 123)
+
+    @pytest.mark.asyncio
+    async def test_get_winners_not_initialized(self, tmp_path):
+        """Test get_winners raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.get_winners(1)
+
+    @pytest.mark.asyncio
+    async def test_clear_winners_not_initialized(self, tmp_path):
+        """Test clear_winners raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.clear_winners(1)
+
+    @pytest.mark.asyncio
+    async def test_get_guild_config_not_initialized(self, tmp_path):
+        """Test get_guild_config raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.get_guild_config(123456789)
+
+    @pytest.mark.asyncio
+    async def test_save_guild_config_not_initialized(self, tmp_path):
+        """Test save_guild_config raises when not initialized."""
+        storage = StorageService(tmp_path / "test.db")
+        config = GuildConfig(guild_id=123456789, admin_role_ids=[])
+        
+        with pytest.raises(RuntimeError, match="Database not initialized"):
+            await storage.save_guild_config(config)
+
+
+class TestDatabaseErrorHandling:
+    """Tests for database error handling paths."""
+
+    @pytest.mark.asyncio
+    async def test_get_giveaway_db_error(self, storage_service, sample_giveaway, monkeypatch):
+        """Test get_giveaway handles database errors."""
+        import aiosqlite
+        created = await storage_service.create_giveaway(sample_giveaway)
+        
+        # Mock execute to raise an error
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.get_giveaway(created.id)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_get_giveaway_by_message_db_error(self, storage_service, monkeypatch):
+        """Test get_giveaway_by_message handles database errors."""
+        import aiosqlite
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.get_giveaway_by_message(123)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_get_active_giveaways_db_error(self, storage_service, monkeypatch):
+        """Test get_active_giveaways handles database errors."""
+        import aiosqlite
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.get_active_giveaways()
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_get_scheduled_giveaways_db_error(self, storage_service, monkeypatch):
+        """Test get_scheduled_giveaways handles database errors."""
+        import aiosqlite
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.get_scheduled_giveaways()
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_update_giveaway_db_error(self, storage_service, sample_giveaway, monkeypatch):
+        """Test update_giveaway raises database errors."""
+        import aiosqlite
+        created = await storage_service.create_giveaway(sample_giveaway)
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        with pytest.raises(aiosqlite.Error):
+            await storage_service.update_giveaway(created)
+
+    @pytest.mark.asyncio
+    async def test_remove_entry_db_error(self, storage_service, sample_giveaway, monkeypatch):
+        """Test remove_entry handles database errors."""
+        import aiosqlite
+        created = await storage_service.create_giveaway(sample_giveaway)
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.remove_entry(created.id, 123)
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_get_entries_db_error(self, storage_service, sample_giveaway, monkeypatch):
+        """Test get_entries handles database errors."""
+        import aiosqlite
+        created = await storage_service.create_giveaway(sample_giveaway)
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.get_entries(created.id)
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_has_entered_db_error(self, storage_service, sample_giveaway, monkeypatch):
+        """Test has_entered handles database errors."""
+        import aiosqlite
+        created = await storage_service.create_giveaway(sample_giveaway)
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.has_entered(created.id, 123)
+        assert result is False
+
+    @pytest.mark.asyncio
+    async def test_get_user_entries_db_error(self, storage_service, monkeypatch):
+        """Test get_user_entries handles database errors."""
+        import aiosqlite
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.get_user_entries(123, 456)
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_get_winners_db_error(self, storage_service, sample_giveaway, monkeypatch):
+        """Test get_winners handles database errors."""
+        import aiosqlite
+        created = await storage_service.create_giveaway(sample_giveaway)
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.get_winners(created.id)
+        assert result == []
+
+    @pytest.mark.asyncio
+    async def test_get_guild_config_db_error(self, storage_service, monkeypatch):
+        """Test get_guild_config handles database errors."""
+        import aiosqlite
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        result = await storage_service.get_guild_config(123456789)
+        # Should return default config on error
+        assert result.guild_id == 123456789
+        assert result.admin_role_ids == []
+
+    @pytest.mark.asyncio
+    async def test_save_guild_config_db_error(self, storage_service, monkeypatch):
+        """Test save_guild_config raises database errors."""
+        import aiosqlite
+        config = GuildConfig(guild_id=123456789, admin_role_ids=[])
+        
+        async def mock_execute(*args, **kwargs):
+            raise aiosqlite.Error("Test error")
+        
+        monkeypatch.setattr(storage_service._connection, "execute", mock_execute)
+        
+        with pytest.raises(aiosqlite.Error):
+            await storage_service.save_guild_config(config)
