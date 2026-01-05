@@ -685,7 +685,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_save_guild_config_not_initialized(self, tmp_path):
-        """Test save_guild_config raises when not initialized."""
+        """Test save_guild_config raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         config = GuildConfig(guild_id=123456789, admin_role_ids=[])
         
@@ -698,7 +702,13 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_get_giveaway_db_error(self, storage_service, sample_giveaway, monkeypatch):
-        """Test get_giveaway handles database errors."""
+        """Test get_giveaway handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         created = await storage_service.create_giveaway(sample_giveaway)
         
@@ -713,7 +723,12 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_get_giveaway_by_message_db_error(self, storage_service, monkeypatch):
-        """Test get_giveaway_by_message handles database errors."""
+        """Test get_giveaway_by_message handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         
         async def mock_execute(*args, **kwargs):
@@ -726,7 +741,12 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_get_active_giveaways_db_error(self, storage_service, monkeypatch):
-        """Test get_active_giveaways handles database errors."""
+        """Test get_active_giveaways handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         
         async def mock_execute(*args, **kwargs):
@@ -739,7 +759,12 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_get_scheduled_giveaways_db_error(self, storage_service, monkeypatch):
-        """Test get_scheduled_giveaways handles database errors."""
+        """Test get_scheduled_giveaways handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         
         async def mock_execute(*args, **kwargs):
@@ -752,7 +777,13 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_update_giveaway_db_error(self, storage_service, sample_giveaway, monkeypatch):
-        """Test update_giveaway raises database errors."""
+        """Test update_giveaway raises database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         created = await storage_service.create_giveaway(sample_giveaway)
         
@@ -766,7 +797,13 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_remove_entry_db_error(self, storage_service, sample_giveaway, monkeypatch):
-        """Test remove_entry handles database errors."""
+        """Test remove_entry handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         created = await storage_service.create_giveaway(sample_giveaway)
         
@@ -780,7 +817,13 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_get_entries_db_error(self, storage_service, sample_giveaway, monkeypatch):
-        """Test get_entries handles database errors."""
+        """Test get_entries handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         created = await storage_service.create_giveaway(sample_giveaway)
         
@@ -794,7 +837,13 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_has_entered_db_error(self, storage_service, sample_giveaway, monkeypatch):
-        """Test has_entered handles database errors."""
+        """Test has_entered handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         created = await storage_service.create_giveaway(sample_giveaway)
         
@@ -808,7 +857,12 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_get_user_entries_db_error(self, storage_service, monkeypatch):
-        """Test get_user_entries handles database errors."""
+        """Test get_user_entries handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         
         async def mock_execute(*args, **kwargs):
@@ -821,7 +875,13 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_get_winners_db_error(self, storage_service, sample_giveaway, monkeypatch):
-        """Test get_winners handles database errors."""
+        """Test get_winners handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         created = await storage_service.create_giveaway(sample_giveaway)
         
@@ -835,7 +895,12 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_get_guild_config_db_error(self, storage_service, monkeypatch):
-        """Test get_guild_config handles database errors."""
+        """Test get_guild_config handles database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         
         async def mock_execute(*args, **kwargs):
@@ -850,7 +915,12 @@ class TestDatabaseErrorHandling:
 
     @pytest.mark.asyncio
     async def test_save_guild_config_db_error(self, storage_service, monkeypatch):
-        """Test save_guild_config raises database errors."""
+        """Test save_guild_config raises database errors.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            monkeypatch: Pytest fixture for mocking.
+        """
         import aiosqlite
         config = GuildConfig(guild_id=123456789, admin_role_ids=[])
         
