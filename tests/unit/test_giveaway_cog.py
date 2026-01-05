@@ -13,7 +13,12 @@ from src.models.giveaway import Giveaway
 
 @pytest.fixture
 def mock_bot():
-    """Create a mock Discord bot."""
+    """Create a mock Discord bot.
+
+    Returns:
+        MagicMock: A mock bot object with spec of commands.Bot,
+            including mocked add_cog and add_view methods.
+    """
     bot = MagicMock(spec=commands.Bot)
     bot.add_cog = AsyncMock()
     bot.add_view = MagicMock()
@@ -22,24 +27,49 @@ def mock_bot():
 
 @pytest.fixture
 def mock_storage():
-    """Create a mock storage service."""
+    """Create a mock storage service.
+
+    Returns:
+        AsyncMock: A mock storage service object for testing.
+    """
     return AsyncMock()
 
 
 @pytest.fixture
 def mock_giveaway_service():
-    """Create a mock giveaway service."""
+    """Create a mock giveaway service.
+
+    Returns:
+        AsyncMock: A mock giveaway service object for testing.
+    """
     return AsyncMock()
 
 
 @pytest.fixture
 def giveaway_cog(mock_bot, mock_giveaway_service, mock_storage):
-    """Create a GiveawayCog for testing."""
+    """Create a GiveawayCog for testing.
+
+    Args:
+        mock_bot: The mock Discord bot fixture.
+        mock_giveaway_service: The mock giveaway service fixture.
+        mock_storage: The mock storage service fixture.
+
+    Returns:
+        GiveawayCog: A configured GiveawayCog instance for testing.
+    """
     return GiveawayCog(mock_bot, mock_giveaway_service, mock_storage)
 
 
 def create_mock_interaction(guild_id=123456789, user_id=111111111):
-    """Create a mock Discord interaction."""
+    """Create a mock Discord interaction.
+
+    Args:
+        guild_id: The ID for the mock guild. Defaults to 123456789.
+        user_id: The ID for the mock user. Defaults to 111111111.
+
+    Returns:
+        MagicMock: A mock Discord interaction with configured guild and user.
+    """
     interaction = MagicMock(spec=discord.Interaction)
     interaction.response = AsyncMock()
 
@@ -61,7 +91,14 @@ class TestListGiveaways:
 
     @pytest.mark.asyncio
     async def test_list_giveaways_no_guild(self, giveaway_cog):
-        """Test list giveaways with no guild."""
+        """Test list giveaways with no guild.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+
+        Verifies that an appropriate error message is sent when the
+        command is used outside of a server context.
+        """
         interaction = create_mock_interaction()
         interaction.guild = None
 
@@ -74,7 +111,14 @@ class TestListGiveaways:
 
     @pytest.mark.asyncio
     async def test_list_giveaways_success(self, giveaway_cog, mock_giveaway_service):
-        """Test successful list giveaways."""
+        """Test successful list giveaways.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+            mock_giveaway_service: The mock giveaway service fixture.
+
+        Verifies that active giveaways are fetched and a response is sent.
+        """
         interaction = create_mock_interaction()
         mock_giveaway_service.get_active_giveaways = AsyncMock(
             return_value=[
@@ -96,7 +140,14 @@ class TestListGiveaways:
 
     @pytest.mark.asyncio
     async def test_list_giveaways_empty(self, giveaway_cog, mock_giveaway_service):
-        """Test list giveaways when none exist."""
+        """Test list giveaways when none exist.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+            mock_giveaway_service: The mock giveaway service fixture.
+
+        Verifies that an appropriate response is sent when no giveaways exist.
+        """
         interaction = create_mock_interaction()
         mock_giveaway_service.get_active_giveaways = AsyncMock(return_value=[])
 
@@ -110,7 +161,14 @@ class TestMyEntries:
 
     @pytest.mark.asyncio
     async def test_my_entries_no_guild(self, giveaway_cog):
-        """Test my entries with no guild."""
+        """Test my entries with no guild.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+
+        Verifies that an appropriate error message is sent when the
+        command is used outside of a server context.
+        """
         interaction = create_mock_interaction()
         interaction.guild = None
 
@@ -123,7 +181,14 @@ class TestMyEntries:
 
     @pytest.mark.asyncio
     async def test_my_entries_success(self, giveaway_cog, mock_giveaway_service):
-        """Test successful my entries."""
+        """Test successful my entries.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+            mock_giveaway_service: The mock giveaway service fixture.
+
+        Verifies that user entries are fetched and a response is sent.
+        """
         interaction = create_mock_interaction()
         mock_giveaway_service.get_user_entries = AsyncMock(
             return_value=[
@@ -147,7 +212,14 @@ class TestMyEntries:
 
     @pytest.mark.asyncio
     async def test_my_entries_empty(self, giveaway_cog, mock_giveaway_service):
-        """Test my entries when user has no entries."""
+        """Test my entries when user has no entries.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+            mock_giveaway_service: The mock giveaway service fixture.
+
+        Verifies that an appropriate response is sent when user has no entries.
+        """
         interaction = create_mock_interaction()
         mock_giveaway_service.get_user_entries = AsyncMock(return_value=[])
 
@@ -161,7 +233,15 @@ class TestOnReady:
 
     @pytest.mark.asyncio
     async def test_on_ready_registers_views(self, giveaway_cog, mock_bot, mock_giveaway_service):
-        """Test on_ready registers persistent views."""
+        """Test on_ready registers persistent views.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+            mock_bot: The mock Discord bot fixture.
+            mock_giveaway_service: The mock giveaway service fixture.
+
+        Verifies that persistent views are registered for each active giveaway.
+        """
         mock_giveaway_service.get_active_giveaways = AsyncMock(
             return_value=[
                 Giveaway(
@@ -189,7 +269,15 @@ class TestOnReady:
 
     @pytest.mark.asyncio
     async def test_on_ready_skips_inactive_giveaways(self, giveaway_cog, mock_bot, mock_giveaway_service):
-        """Test on_ready skips inactive giveaways."""
+        """Test on_ready skips inactive giveaways.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+            mock_bot: The mock Discord bot fixture.
+            mock_giveaway_service: The mock giveaway service fixture.
+
+        Verifies that ended giveaways do not have views registered.
+        """
         mock_giveaway_service.get_active_giveaways = AsyncMock(
             return_value=[
                 Giveaway(
@@ -210,7 +298,15 @@ class TestOnReady:
 
     @pytest.mark.asyncio
     async def test_on_ready_skips_none_id(self, giveaway_cog, mock_bot, mock_giveaway_service):
-        """Test on_ready skips giveaways with None ID."""
+        """Test on_ready skips giveaways with None ID.
+
+        Args:
+            giveaway_cog: The GiveawayCog fixture.
+            mock_bot: The mock Discord bot fixture.
+            mock_giveaway_service: The mock giveaway service fixture.
+
+        Verifies that giveaways without an ID do not have views registered.
+        """
         mock_giveaway_service.get_active_giveaways = AsyncMock(
             return_value=[
                 Giveaway(
@@ -234,7 +330,13 @@ class TestSetup:
 
     @pytest.mark.asyncio
     async def test_setup_with_services(self, mock_bot):
-        """Test setup with services available."""
+        """Test setup with services available.
+
+        Args:
+            mock_bot: The mock Discord bot fixture.
+
+        Verifies that the cog is added when all required services are present.
+        """
         mock_bot.storage = MagicMock()
         mock_bot.giveaway_service = MagicMock()
 
@@ -244,7 +346,13 @@ class TestSetup:
 
     @pytest.mark.asyncio
     async def test_setup_missing_storage(self, mock_bot):
-        """Test setup with missing storage."""
+        """Test setup with missing storage.
+
+        Args:
+            mock_bot: The mock Discord bot fixture.
+
+        Verifies that the cog is not added when storage service is missing.
+        """
         mock_bot.giveaway_service = MagicMock()
         # storage not set
 
@@ -254,7 +362,13 @@ class TestSetup:
 
     @pytest.mark.asyncio
     async def test_setup_missing_giveaway_service(self, mock_bot):
-        """Test setup with missing giveaway service."""
+        """Test setup with missing giveaway service.
+
+        Args:
+            mock_bot: The mock Discord bot fixture.
+
+        Verifies that the cog is not added when giveaway service is missing.
+        """
         mock_bot.storage = MagicMock()
         # giveaway_service not set
 

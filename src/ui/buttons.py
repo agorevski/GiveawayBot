@@ -13,6 +13,11 @@ class GiveawayEntryButton(discord.ui.Button):
     """Button for entering a giveaway."""
 
     def __init__(self, giveaway_id: int):
+        """Initialize the giveaway entry button.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+        """
         super().__init__(
             style=discord.ButtonStyle.primary,
             label="🎉 Enter Giveaway",
@@ -21,7 +26,11 @@ class GiveawayEntryButton(discord.ui.Button):
         self.giveaway_id = giveaway_id
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        """Handle button click."""
+        """Handle button click to enter the giveaway.
+
+        Args:
+            interaction: The Discord interaction triggered by the button click.
+        """
         # Get the giveaway service from the bot
         giveaway_service: Optional["GiveawayService"] = getattr(
             interaction.client, "giveaway_service", None
@@ -67,7 +76,12 @@ class GiveawayEntryButton(discord.ui.Button):
         interaction: discord.Interaction,
         giveaway_service: "GiveawayService",
     ) -> None:
-        """Update the giveaway message embed with current entry count."""
+        """Update the giveaway message embed with current entry count.
+
+        Args:
+            interaction: The Discord interaction containing the message to update.
+            giveaway_service: The service used to fetch giveaway data.
+        """
         giveaway = await giveaway_service.get_giveaway(self.giveaway_id)
         if not giveaway or not interaction.message:
             return
@@ -94,6 +108,11 @@ class GiveawayLeaveButton(discord.ui.Button):
     """Button for leaving a giveaway."""
 
     def __init__(self, giveaway_id: int):
+        """Initialize the giveaway leave button.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+        """
         super().__init__(
             style=discord.ButtonStyle.secondary,
             label="Leave Giveaway",
@@ -102,7 +121,11 @@ class GiveawayLeaveButton(discord.ui.Button):
         self.giveaway_id = giveaway_id
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        """Handle button click."""
+        """Handle button click to leave the giveaway.
+
+        Args:
+            interaction: The Discord interaction triggered by the button click.
+        """
         giveaway_service: Optional["GiveawayService"] = getattr(
             interaction.client, "giveaway_service", None
         )
@@ -138,7 +161,12 @@ class GiveawayLeaveButton(discord.ui.Button):
         interaction: discord.Interaction,
         giveaway_service: "GiveawayService",
     ) -> None:
-        """Update the giveaway message embed with current entry count."""
+        """Update the giveaway message embed with current entry count.
+
+        Args:
+            interaction: The Discord interaction containing the message to update.
+            giveaway_service: The service used to fetch giveaway data.
+        """
         giveaway = await giveaway_service.get_giveaway(self.giveaway_id)
         if not giveaway or not interaction.message:
             return
@@ -165,6 +193,12 @@ class GiveawayEntryView(discord.ui.View):
     """View containing giveaway entry buttons."""
 
     def __init__(self, giveaway_id: int, include_leave: bool = False):
+        """Initialize the giveaway entry view.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+            include_leave: Whether to include the leave button. Defaults to False.
+        """
         # Set timeout to None for persistent views
         super().__init__(timeout=None)
 
@@ -177,6 +211,7 @@ class EndedGiveawayView(discord.ui.View):
     """View for ended giveaways (disabled buttons)."""
 
     def __init__(self):
+        """Initialize the ended giveaway view with a disabled button."""
         super().__init__(timeout=None)
 
         button = discord.ui.Button(

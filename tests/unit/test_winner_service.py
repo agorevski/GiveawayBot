@@ -11,7 +11,12 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_select_winners_basic(self, winner_service, storage_service):
-        """Test selecting winners from entries."""
+        """Test selecting winners from entries.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -34,7 +39,15 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_select_multiple_winners(self, winner_service, storage_service):
-        """Test selecting multiple winners."""
+        """Test selecting multiple winners.
+
+        Verifies that when multiple winners are requested, the service
+        returns the correct number of unique winners.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -58,7 +71,14 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_select_winners_no_entries(self, winner_service, storage_service):
-        """Test selecting winners when there are no entries."""
+        """Test selecting winners when there are no entries.
+
+        Verifies that an empty list is returned when a giveaway has no entries.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -77,7 +97,15 @@ class TestWinnerService:
     async def test_select_winners_fewer_entries_than_winners(
         self, winner_service, storage_service
     ):
-        """Test selecting winners when there are fewer entries than winners requested."""
+        """Test selecting winners when there are fewer entries than winners requested.
+
+        Verifies that when fewer entries exist than winners requested,
+        all entries are selected as winners.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -100,7 +128,15 @@ class TestWinnerService:
     async def test_select_winners_with_valid_user_filter(
         self, winner_service, storage_service
     ):
-        """Test selecting winners filtering by valid users."""
+        """Test selecting winners filtering by valid users.
+
+        Verifies that only users in the valid_user_ids list can be selected
+        as winners.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -128,7 +164,15 @@ class TestWinnerService:
     async def test_select_winners_no_valid_users(
         self, winner_service, storage_service
     ):
-        """Test selecting winners when no entries are valid users."""
+        """Test selecting winners when no entries are valid users.
+
+        Verifies that an empty list is returned when none of the entries
+        match the valid_user_ids filter.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -151,7 +195,14 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_select_winners_null_giveaway_id(self, winner_service):
-        """Test selecting winners for a giveaway with no ID."""
+        """Test selecting winners for a giveaway with no ID.
+
+        Verifies that an empty list is returned when the giveaway has no ID
+        (i.e., has not been saved to storage).
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -167,7 +218,15 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_reroll_winners(self, winner_service, storage_service):
-        """Test rerolling winners."""
+        """Test rerolling winners.
+
+        Verifies that rerolling selects new winners different from the
+        previous selection when possible.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -196,7 +255,15 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_reroll_winners_no_entries(self, winner_service, storage_service):
-        """Test rerolling when there are no entries."""
+        """Test rerolling when there are no entries.
+
+        Verifies that rerolling returns an empty list and appropriate message
+        when there are no entries in the giveaway.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -213,7 +280,14 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_reroll_winners_null_id(self, winner_service):
-        """Test rerolling for a giveaway with no ID."""
+        """Test rerolling for a giveaway with no ID.
+
+        Verifies that rerolling returns an empty list and invalid message
+        when the giveaway has no ID.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -229,7 +303,14 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_get_winners(self, winner_service, storage_service):
-        """Test getting winners for a giveaway."""
+        """Test getting winners for a giveaway.
+
+        Verifies that previously stored winners can be retrieved correctly.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -250,7 +331,14 @@ class TestWinnerService:
 
     @pytest.mark.asyncio
     async def test_clear_winners(self, winner_service, storage_service):
-        """Test clearing winners for a giveaway."""
+        """Test clearing winners for a giveaway.
+
+        Verifies that all winners are removed from a giveaway after clearing.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+            storage_service: Fixture providing a StorageService instance.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -273,14 +361,28 @@ class TestWinnerServiceFormatting:
     """Tests for WinnerService formatting methods."""
 
     def test_format_winners_message_no_winners(self, winner_service):
-        """Test formatting message when there are no winners."""
+        """Test formatting message when there are no winners.
+
+        Verifies that an appropriate message is generated when no winners
+        are selected for a giveaway.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+        """
         message = winner_service.format_winners_message([], "Test Prize")
 
         assert "no valid entries" in message.lower() or "no winner" in message.lower()
         assert "Test Prize" in message
 
     def test_format_winners_message_single_winner(self, winner_service):
-        """Test formatting message for a single winner."""
+        """Test formatting message for a single winner.
+
+        Verifies that the message includes a mention for the winner,
+        the prize name, and a congratulations.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+        """
         message = winner_service.format_winners_message([222222222], "Test Prize")
 
         assert "<@222222222>" in message
@@ -288,7 +390,14 @@ class TestWinnerServiceFormatting:
         assert "congratulations" in message.lower()
 
     def test_format_winners_message_multiple_winners(self, winner_service):
-        """Test formatting message for multiple winners."""
+        """Test formatting message for multiple winners.
+
+        Verifies that the message includes mentions for all winners
+        and the prize name.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+        """
         message = winner_service.format_winners_message(
             [222222222, 333333333, 444444444], "Test Prize"
         )
@@ -299,7 +408,14 @@ class TestWinnerServiceFormatting:
         assert "Test Prize" in message
 
     def test_format_dm_message(self, winner_service):
-        """Test formatting DM message for winners."""
+        """Test formatting DM message for winners.
+
+        Verifies that the DM message includes congratulations, the prize name,
+        and the server name.
+
+        Args:
+            winner_service: Fixture providing a WinnerService instance.
+        """
         message = winner_service.format_dm_message("Test Prize", "Test Server")
 
         assert "congratulations" in message.lower()

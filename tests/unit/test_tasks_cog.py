@@ -15,7 +15,12 @@ from pathlib import Path
 
 @pytest.fixture
 def mock_bot():
-    """Create a mock Discord bot."""
+    """Create a mock Discord bot.
+
+    Returns:
+        MagicMock: A mock bot instance with add_cog and wait_until_ready
+            configured as AsyncMock.
+    """
     bot = MagicMock(spec=commands.Bot)
     bot.add_cog = AsyncMock()
     bot.wait_until_ready = AsyncMock()
@@ -24,25 +29,41 @@ def mock_bot():
 
 @pytest.fixture
 def mock_giveaway_service():
-    """Create a mock giveaway service."""
+    """Create a mock giveaway service.
+
+    Returns:
+        AsyncMock: A mock giveaway service instance.
+    """
     return AsyncMock()
 
 
 @pytest.fixture
 def mock_winner_service():
-    """Create a mock winner service."""
+    """Create a mock winner service.
+
+    Returns:
+        AsyncMock: A mock winner service instance.
+    """
     return AsyncMock()
 
 
 @pytest.fixture
 def mock_message_service():
-    """Create a mock message service."""
+    """Create a mock message service.
+
+    Returns:
+        AsyncMock: A mock message service instance.
+    """
     return AsyncMock()
 
 
 @pytest.fixture
 def mock_config():
-    """Create a mock config."""
+    """Create a mock config.
+
+    Returns:
+        Config: A test configuration instance with default test values.
+    """
     return Config(
         token="test-token",
         database_path=Path("data/test.db"),
@@ -53,7 +74,18 @@ def mock_config():
 
 @pytest.fixture
 def tasks_cog(mock_bot, mock_giveaway_service, mock_winner_service, mock_message_service, mock_config):
-    """Create a TasksCog for testing."""
+    """Create a TasksCog for testing.
+
+    Args:
+        mock_bot: Mock Discord bot fixture.
+        mock_giveaway_service: Mock giveaway service fixture.
+        mock_winner_service: Mock winner service fixture.
+        mock_message_service: Mock message service fixture.
+        mock_config: Mock config fixture.
+
+    Returns:
+        TasksCog: A TasksCog instance with cancelled background task.
+    """
     cog = TasksCog(
         mock_bot,
         mock_giveaway_service,
@@ -70,7 +102,12 @@ class TestTasksCogInit:
     """Tests for TasksCog initialization."""
 
     def test_cog_initialization(self, tasks_cog, mock_config):
-        """Test cog is initialized correctly."""
+        """Test cog is initialized correctly.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_config: Mock config fixture.
+        """
         assert tasks_cog.bot is not None
         assert tasks_cog.giveaway_service is not None
         assert tasks_cog.winner_service is not None
@@ -82,14 +119,22 @@ class TestCogLoadUnload:
 
     @pytest.mark.asyncio
     async def test_cog_load_starts_task(self, tasks_cog):
-        """Test cog_load starts the background task."""
+        """Test cog_load starts the background task.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+        """
         with patch.object(tasks_cog.check_giveaways, 'start') as mock_start:
             await tasks_cog.cog_load()
             mock_start.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_cog_unload_stops_task(self, tasks_cog):
-        """Test cog_unload stops the background task."""
+        """Test cog_unload stops the background task.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+        """
         with patch.object(tasks_cog.check_giveaways, 'cancel') as mock_cancel:
             await tasks_cog.cog_unload()
             mock_cancel.assert_called_once()
@@ -100,7 +145,12 @@ class TestCheckScheduledGiveaways:
 
     @pytest.mark.asyncio
     async def test_no_scheduled_giveaways(self, tasks_cog, mock_giveaway_service):
-        """Test when there are no scheduled giveaways."""
+        """Test when there are no scheduled giveaways.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         mock_giveaway_service.get_giveaways_to_start.return_value = []
 
         await tasks_cog._check_scheduled_giveaways()
@@ -109,7 +159,13 @@ class TestCheckScheduledGiveaways:
 
     @pytest.mark.asyncio
     async def test_start_scheduled_giveaway(self, tasks_cog, mock_bot, mock_giveaway_service):
-        """Test starting a scheduled giveaway."""
+        """Test starting a scheduled giveaway.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -142,7 +198,13 @@ class TestCheckScheduledGiveaways:
 
     @pytest.mark.asyncio
     async def test_start_scheduled_invalid_channel(self, tasks_cog, mock_bot, mock_giveaway_service):
-        """Test starting when channel is invalid."""
+        """Test starting when channel is invalid.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -162,7 +224,13 @@ class TestCheckScheduledGiveaways:
 
     @pytest.mark.asyncio
     async def test_start_scheduled_with_existing_message(self, tasks_cog, mock_bot, mock_giveaway_service):
-        """Test starting a scheduled giveaway with existing message."""
+        """Test starting a scheduled giveaway with existing message.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -193,7 +261,13 @@ class TestCheckScheduledGiveaways:
 
     @pytest.mark.asyncio
     async def test_start_scheduled_message_deleted(self, tasks_cog, mock_bot, mock_giveaway_service):
-        """Test starting when original message was deleted."""
+        """Test starting when original message was deleted.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -227,7 +301,13 @@ class TestCheckScheduledGiveaways:
 
     @pytest.mark.asyncio
     async def test_start_scheduled_with_role(self, tasks_cog, mock_bot, mock_giveaway_service):
-        """Test starting a scheduled giveaway with required role."""
+        """Test starting a scheduled giveaway with required role.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -262,7 +342,13 @@ class TestCheckScheduledGiveaways:
 
     @pytest.mark.asyncio
     async def test_start_scheduled_host_not_found(self, tasks_cog, mock_bot, mock_giveaway_service):
-        """Test starting when host user is not found."""
+        """Test starting when host user is not found.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -299,7 +385,12 @@ class TestCheckEndingGiveaways:
 
     @pytest.mark.asyncio
     async def test_no_ending_giveaways(self, tasks_cog, mock_giveaway_service):
-        """Test when there are no giveaways to end."""
+        """Test when there are no giveaways to end.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         mock_giveaway_service.get_giveaways_to_end.return_value = []
 
         await tasks_cog._check_ending_giveaways()
@@ -308,7 +399,15 @@ class TestCheckEndingGiveaways:
 
     @pytest.mark.asyncio
     async def test_end_giveaway(self, tasks_cog, mock_bot, mock_giveaway_service, mock_winner_service, mock_message_service):
-        """Test ending a giveaway."""
+        """Test ending a giveaway.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+            mock_winner_service: Mock winner service fixture.
+            mock_message_service: Mock message service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -336,7 +435,13 @@ class TestCheckEndingGiveaways:
 
     @pytest.mark.asyncio
     async def test_end_giveaway_invalid_channel(self, tasks_cog, mock_bot, mock_giveaway_service):
-        """Test ending when channel is invalid."""
+        """Test ending when channel is invalid.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -355,7 +460,13 @@ class TestCheckEndingGiveaways:
 
     @pytest.mark.asyncio
     async def test_end_giveaway_fails(self, tasks_cog, mock_bot, mock_giveaway_service):
-        """Test when ending a giveaway fails."""
+        """Test when ending a giveaway fails.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+            mock_giveaway_service: Mock giveaway service fixture.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -377,7 +488,11 @@ class TestCheckGiveaways:
 
     @pytest.mark.asyncio
     async def test_check_giveaways_calls_both(self, tasks_cog):
-        """Test check_giveaways calls both check methods."""
+        """Test check_giveaways calls both check methods.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+        """
         tasks_cog._check_scheduled_giveaways = AsyncMock()
         tasks_cog._check_ending_giveaways = AsyncMock()
 
@@ -388,7 +503,11 @@ class TestCheckGiveaways:
 
     @pytest.mark.asyncio
     async def test_check_giveaways_handles_errors(self, tasks_cog):
-        """Test check_giveaways handles errors gracefully."""
+        """Test check_giveaways handles errors gracefully.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+        """
         tasks_cog._check_scheduled_giveaways = AsyncMock(
             side_effect=discord.DiscordException("Test error")
         )
@@ -403,7 +522,12 @@ class TestBeforeCheckGiveaways:
 
     @pytest.mark.asyncio
     async def test_before_loop_waits_for_ready(self, tasks_cog, mock_bot):
-        """Test before_loop waits for bot to be ready."""
+        """Test before_loop waits for bot to be ready.
+
+        Args:
+            tasks_cog: TasksCog fixture.
+            mock_bot: Mock bot fixture.
+        """
         await tasks_cog.before_check_giveaways()
 
         mock_bot.wait_until_ready.assert_called_once()
@@ -414,7 +538,11 @@ class TestSetup:
 
     @pytest.mark.asyncio
     async def test_setup_with_all_services(self, mock_bot):
-        """Test setup with all services available."""
+        """Test setup with all services available.
+
+        Args:
+            mock_bot: Mock bot fixture.
+        """
         mock_bot.giveaway_service = MagicMock()
         mock_bot.winner_service = MagicMock()
         mock_bot.message_service = MagicMock()
@@ -430,7 +558,11 @@ class TestSetup:
 
     @pytest.mark.asyncio
     async def test_setup_missing_services(self, mock_bot):
-        """Test setup with missing services."""
+        """Test setup with missing services.
+
+        Args:
+            mock_bot: Mock bot fixture.
+        """
         # No services attached
 
         await setup(mock_bot)

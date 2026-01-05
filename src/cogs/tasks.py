@@ -31,6 +31,15 @@ class TasksCog(commands.Cog):
         message_service: GiveawayMessageService,
         config: Config,
     ):
+        """Initialize the TasksCog with required services.
+
+        Args:
+            bot: The Discord bot instance.
+            giveaway_service: Service for managing giveaway data.
+            winner_service: Service for selecting and managing winners.
+            message_service: Service for sending giveaway messages.
+            config: Configuration object containing settings.
+        """
         self.bot = bot
         self.giveaway_service = giveaway_service
         self.winner_service = winner_service
@@ -38,16 +47,33 @@ class TasksCog(commands.Cog):
         self.check_giveaways.change_interval(seconds=config.giveaway_check_interval)
 
     async def cog_load(self) -> None:
-        """Start background tasks when cog is loaded."""
+        """Start background tasks when cog is loaded.
+
+        Called automatically by discord.py when the cog is added to the bot.
+        Starts the periodic giveaway checking task.
+        """
         self.check_giveaways.start()
 
     async def cog_unload(self) -> None:
-        """Stop background tasks when cog is unloaded."""
+        """Stop background tasks when cog is unloaded.
+
+        Called automatically by discord.py when the cog is removed from the bot.
+        Cancels the periodic giveaway checking task.
+        """
         self.check_giveaways.cancel()
 
     @tasks.loop(seconds=_DEFAULT_CHECK_INTERVAL)
     async def check_giveaways(self) -> None:
-        """Check for giveaways that need to start or end."""
+        """Check for giveaways that need to start or end.
+
+        This task runs periodically to check for scheduled giveaways that
+        should start and active giveaways that should end. Errors are logged
+        but do not stop the task loop.
+
+        Raises:
+            discord.DiscordException: If there's an issue communicating with Discord.
+            aiosqlite.Error: If there's a database error.
+        """
         try:
             # Check for scheduled giveaways that should start
             await self._check_scheduled_giveaways()
@@ -59,11 +85,23 @@ class TasksCog(commands.Cog):
 
     @check_giveaways.before_loop
     async def before_check_giveaways(self) -> None:
-        """Wait for bot to be ready before starting task."""
+        """Wait for bot to be ready before starting task.
+
+        This ensures the bot is fully connected to Discord before the
+        giveaway checking task begins running.
+        """
         await self.bot.wait_until_ready()
 
     async def _check_scheduled_giveaways(self) -> None:
-        """Check for and start scheduled giveaways."""
+        """Check for and start scheduled giveaways.
+
+        Retrieves all giveaways that are scheduled to start and activates them
+        by sending or updating the giveaway message in the appropriate channel.
+
+        Raises:
+            discord.DiscordException: If there's an issue sending messages.
+            aiosqlite.Error: If there's a database error.
+        """
         giveaways_to_start = await self.giveaway_service.get_giveaways_to_start()
 
         for giveaway in giveaways_to_start:
@@ -121,7 +159,15 @@ class TasksCog(commands.Cog):
                 logger.error(f"Error starting giveaway {giveaway.id}: {e}")
 
     async def _check_ending_giveaways(self) -> None:
-        """Check for and end giveaways past their end time."""
+        """Check for and end giveaways past their end time.
+
+        Retrieves all active giveaways that have passed their end time,
+        selects winners, updates the giveaway message, and announces results.
+
+        Raises:
+            discord.DiscordException: If there's an issue sending messages.
+            aiosqlite.Error: If there's a database error.
+        """
         giveaways_to_end = await self.giveaway_service.get_giveaways_to_end()
 
         for giveaway in giveaways_to_end:
@@ -165,7 +211,14 @@ class TasksCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    """Setup function for loading the cog."""
+    """Setup function for loading the cog.
+
+    Called by discord.py when loading the cog extension. Retrieves required
+    services from the bot instance and adds the TasksCog to the bot.
+
+    Args:
+        bot: The Discord bot instance with attached services.
+    """
     giveaway_service = getattr(bot, "giveaway_service", None)
     winner_service = getattr(bot, "winner_service", None)
     message_service = getattr(bot, "message_service", None)

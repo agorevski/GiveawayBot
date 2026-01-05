@@ -23,7 +23,14 @@ class StorageService:
         self._connection: Optional[aiosqlite.Connection] = None
 
     async def initialize(self) -> None:
-        """Initialize the database connection and create tables."""
+        """Initialize the database connection and create tables.
+
+        Creates the database directory if it doesn't exist, establishes
+        the connection, and creates all required tables.
+
+        Raises:
+            aiosqlite.Error: If database connection fails.
+        """
         # Ensure the directory exists
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -33,13 +40,24 @@ class StorageService:
         await self._create_tables()
 
     async def close(self) -> None:
-        """Close the database connection."""
+        """Close the database connection.
+
+        Safely closes the database connection if one exists.
+        Sets the connection to None after closing.
+        """
         if self._connection:
             await self._connection.close()
             self._connection = None
 
     async def _create_tables(self) -> None:
-        """Create database tables if they don't exist."""
+        """Create database tables if they don't exist.
+
+        Creates the giveaways, entries, winners, and guild_config tables
+        along with necessary indexes.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -95,7 +113,17 @@ class StorageService:
     # Giveaway operations
 
     async def create_giveaway(self, giveaway: Giveaway) -> Giveaway:
-        """Create a new giveaway and return it with the assigned ID."""
+        """Create a new giveaway and return it with the assigned ID.
+
+        Args:
+            giveaway: The Giveaway object to persist.
+
+        Returns:
+            The same Giveaway object with its ID populated from the database.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -131,7 +159,18 @@ class StorageService:
         return giveaway
 
     async def get_giveaway(self, giveaway_id: int) -> Optional[Giveaway]:
-        """Get a giveaway by ID."""
+        """Get a giveaway by ID.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+
+        Returns:
+            The Giveaway object with entries and winners populated,
+            or None if not found.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -154,7 +193,18 @@ class StorageService:
             return None
 
     async def get_giveaway_by_message(self, message_id: int) -> Optional[Giveaway]:
-        """Get a giveaway by its Discord message ID."""
+        """Get a giveaway by its Discord message ID.
+
+        Args:
+            message_id: The Discord message ID associated with the giveaway.
+
+        Returns:
+            The Giveaway object with entries and winners populated,
+            or None if not found.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -179,7 +229,18 @@ class StorageService:
     async def get_active_giveaways(
         self, guild_id: Optional[int] = None
     ) -> List[Giveaway]:
-        """Get all active giveaways, optionally filtered by guild."""
+        """Get all active giveaways, optionally filtered by guild.
+
+        Args:
+            guild_id: Optional Discord guild ID to filter by.
+
+        Returns:
+            List of active Giveaway objects with entries populated.
+            Returns empty list on database error.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -208,7 +269,16 @@ class StorageService:
             return []
 
     async def get_scheduled_giveaways(self) -> List[Giveaway]:
-        """Get all scheduled giveaways that haven't started yet."""
+        """Get all scheduled giveaways that haven't started yet.
+
+        Returns:
+            List of Giveaway objects that have a scheduled_start time,
+            are not ended, and are not cancelled.
+            Returns empty list on database error.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -229,7 +299,15 @@ class StorageService:
             return []
 
     async def update_giveaway(self, giveaway: Giveaway) -> None:
-        """Update an existing giveaway."""
+        """Update an existing giveaway.
+
+        Args:
+            giveaway: The Giveaway object with updated values.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+            aiosqlite.Error: If database update fails.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -269,7 +347,16 @@ class StorageService:
             raise
 
     async def delete_giveaway(self, giveaway_id: int) -> None:
-        """Delete a giveaway and all related data."""
+        """Delete a giveaway and all related data.
+
+        Removes the giveaway along with all associated entries and winners.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway to delete.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -287,7 +374,18 @@ class StorageService:
     # Entry operations
 
     async def add_entry(self, giveaway_id: int, user_id: int) -> bool:
-        """Add an entry to a giveaway. Returns True if added, False if already exists."""
+        """Add an entry to a giveaway.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+            user_id: The Discord user ID entering the giveaway.
+
+        Returns:
+            True if the entry was added, False if user already entered.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -302,7 +400,19 @@ class StorageService:
             return False
 
     async def remove_entry(self, giveaway_id: int, user_id: int) -> bool:
-        """Remove an entry from a giveaway. Returns True if removed."""
+        """Remove an entry from a giveaway.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+            user_id: The Discord user ID to remove from the giveaway.
+
+        Returns:
+            True if the entry was removed, False if entry didn't exist
+            or on database error.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -318,7 +428,18 @@ class StorageService:
             return False
 
     async def get_entries(self, giveaway_id: Optional[int]) -> List[int]:
-        """Get all user IDs who entered a giveaway."""
+        """Get all user IDs who entered a giveaway.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+
+        Returns:
+            List of Discord user IDs who entered the giveaway.
+            Returns empty list if giveaway_id is None or on error.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -336,7 +457,18 @@ class StorageService:
             return []
 
     async def has_entered(self, giveaway_id: int, user_id: int) -> bool:
-        """Check if a user has entered a giveaway."""
+        """Check if a user has entered a giveaway.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+            user_id: The Discord user ID to check.
+
+        Returns:
+            True if the user has entered, False otherwise or on error.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -351,7 +483,19 @@ class StorageService:
             return False
 
     async def get_user_entries(self, guild_id: int, user_id: int) -> List[Giveaway]:
-        """Get all active giveaways a user has entered in a guild."""
+        """Get all active giveaways a user has entered in a guild.
+
+        Args:
+            guild_id: The Discord guild ID to filter by.
+            user_id: The Discord user ID to look up entries for.
+
+        Returns:
+            List of active Giveaway objects the user has entered.
+            Returns empty list on database error.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -373,7 +517,15 @@ class StorageService:
     # Winner operations
 
     async def add_winner(self, giveaway_id: int, user_id: int) -> None:
-        """Add a winner to a giveaway."""
+        """Add a winner to a giveaway.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+            user_id: The Discord user ID of the winner.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -384,7 +536,18 @@ class StorageService:
         await self._connection.commit()
 
     async def get_winners(self, giveaway_id: Optional[int]) -> List[int]:
-        """Get all winner user IDs for a giveaway."""
+        """Get all winner user IDs for a giveaway.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+
+        Returns:
+            List of Discord user IDs who won the giveaway.
+            Returns empty list if giveaway_id is None or on error.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -402,7 +565,14 @@ class StorageService:
             return []
 
     async def clear_winners(self, giveaway_id: int) -> None:
-        """Clear all winners for a giveaway (for rerolling)."""
+        """Clear all winners for a giveaway (for rerolling).
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -414,7 +584,18 @@ class StorageService:
     # Guild config operations
 
     async def get_guild_config(self, guild_id: int) -> GuildConfig:
-        """Get guild configuration, creating a default if it doesn't exist."""
+        """Get guild configuration, creating a default if it doesn't exist.
+
+        Args:
+            guild_id: The Discord guild ID to get configuration for.
+
+        Returns:
+            The GuildConfig object for the guild. Creates and returns
+            a default configuration if one doesn't exist.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 
@@ -436,7 +617,15 @@ class StorageService:
             return GuildConfig.default(guild_id)
 
     async def save_guild_config(self, config: GuildConfig) -> None:
-        """Save or update guild configuration."""
+        """Save or update guild configuration.
+
+        Args:
+            config: The GuildConfig object to persist.
+
+        Raises:
+            RuntimeError: If database is not initialized.
+            aiosqlite.Error: If database operation fails.
+        """
         if not self._connection:
             raise RuntimeError("Database not initialized")
 

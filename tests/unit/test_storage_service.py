@@ -14,7 +14,11 @@ class TestStorageServiceInit:
 
     @pytest.mark.asyncio
     async def test_initialize_creates_directory(self, tmp_path):
-        """Test that initialize creates the database directory."""
+        """Test that initialize creates the database directory.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         db_path = tmp_path / "subdir" / "test.db"
         storage = StorageService(db_path)
 
@@ -25,13 +29,21 @@ class TestStorageServiceInit:
 
     @pytest.mark.asyncio
     async def test_close_when_not_initialized(self, tmp_path):
-        """Test closing when not initialized doesn't raise."""
+        """Test closing when not initialized doesn't raise.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         await storage.close()  # Should not raise
 
     @pytest.mark.asyncio
     async def test_close_clears_connection(self, storage_service):
-        """Test that close clears the connection."""
+        """Test that close clears the connection.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         await storage_service.close()
         assert storage_service._connection is None
 
@@ -41,7 +53,12 @@ class TestGiveawayOperations:
 
     @pytest.mark.asyncio
     async def test_create_giveaway(self, storage_service, sample_giveaway):
-        """Test creating a giveaway."""
+        """Test creating a giveaway.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
 
         assert created.id is not None
@@ -49,7 +66,12 @@ class TestGiveawayOperations:
 
     @pytest.mark.asyncio
     async def test_get_giveaway(self, storage_service, sample_giveaway):
-        """Test retrieving a giveaway."""
+        """Test retrieving a giveaway.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         retrieved = await storage_service.get_giveaway(created.id)
 
@@ -59,13 +81,22 @@ class TestGiveawayOperations:
 
     @pytest.mark.asyncio
     async def test_get_nonexistent_giveaway(self, storage_service):
-        """Test getting a non-existent giveaway."""
+        """Test getting a non-existent giveaway.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         result = await storage_service.get_giveaway(99999)
         assert result is None
 
     @pytest.mark.asyncio
     async def test_get_giveaway_by_message(self, storage_service, sample_giveaway):
-        """Test getting giveaway by message ID."""
+        """Test getting giveaway by message ID.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         sample_giveaway.message_id = 555555555
         created = await storage_service.create_giveaway(sample_giveaway)
 
@@ -76,13 +107,22 @@ class TestGiveawayOperations:
 
     @pytest.mark.asyncio
     async def test_get_giveaway_by_nonexistent_message(self, storage_service):
-        """Test getting giveaway by non-existent message ID."""
+        """Test getting giveaway by non-existent message ID.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         result = await storage_service.get_giveaway_by_message(99999)
         assert result is None
 
     @pytest.mark.asyncio
     async def test_get_active_giveaways(self, storage_service, sample_giveaway):
-        """Test getting active giveaways."""
+        """Test getting active giveaways.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         await storage_service.create_giveaway(sample_giveaway)
 
         active = await storage_service.get_active_giveaways(sample_giveaway.guild_id)
@@ -92,7 +132,12 @@ class TestGiveawayOperations:
 
     @pytest.mark.asyncio
     async def test_get_active_giveaways_all_guilds(self, storage_service, sample_giveaway):
-        """Test getting active giveaways across all guilds."""
+        """Test getting active giveaways across all guilds.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         await storage_service.create_giveaway(sample_giveaway)
 
         active = await storage_service.get_active_giveaways()
@@ -101,7 +146,11 @@ class TestGiveawayOperations:
 
     @pytest.mark.asyncio
     async def test_get_scheduled_giveaways(self, storage_service):
-        """Test getting scheduled giveaways."""
+        """Test getting scheduled giveaways.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -119,7 +168,12 @@ class TestGiveawayOperations:
 
     @pytest.mark.asyncio
     async def test_update_giveaway(self, storage_service, sample_giveaway):
-        """Test updating a giveaway."""
+        """Test updating a giveaway.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         created.prize = "Updated Prize"
         created.message_id = 123456
@@ -132,7 +186,12 @@ class TestGiveawayOperations:
 
     @pytest.mark.asyncio
     async def test_delete_giveaway(self, storage_service, sample_giveaway):
-        """Test deleting a giveaway."""
+        """Test deleting a giveaway.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         await storage_service.add_entry(created.id, 222222222)
         await storage_service.add_winner(created.id, 222222222)
@@ -148,7 +207,12 @@ class TestEntryOperations:
 
     @pytest.mark.asyncio
     async def test_add_entry(self, storage_service, sample_giveaway):
-        """Test adding an entry."""
+        """Test adding an entry.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
 
         success = await storage_service.add_entry(created.id, 222222222)
@@ -157,7 +221,12 @@ class TestEntryOperations:
 
     @pytest.mark.asyncio
     async def test_add_duplicate_entry(self, storage_service, sample_giveaway):
-        """Test adding a duplicate entry."""
+        """Test adding a duplicate entry.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         await storage_service.add_entry(created.id, 222222222)
 
@@ -167,7 +236,12 @@ class TestEntryOperations:
 
     @pytest.mark.asyncio
     async def test_remove_entry(self, storage_service, sample_giveaway):
-        """Test removing an entry."""
+        """Test removing an entry.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         await storage_service.add_entry(created.id, 222222222)
 
@@ -177,7 +251,12 @@ class TestEntryOperations:
 
     @pytest.mark.asyncio
     async def test_remove_nonexistent_entry(self, storage_service, sample_giveaway):
-        """Test removing a non-existent entry."""
+        """Test removing a non-existent entry.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
 
         success = await storage_service.remove_entry(created.id, 222222222)
@@ -186,7 +265,12 @@ class TestEntryOperations:
 
     @pytest.mark.asyncio
     async def test_get_entries(self, storage_service, sample_giveaway):
-        """Test getting entries for a giveaway."""
+        """Test getting entries for a giveaway.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         await storage_service.add_entry(created.id, 111111111)
         await storage_service.add_entry(created.id, 222222222)
@@ -199,13 +283,22 @@ class TestEntryOperations:
 
     @pytest.mark.asyncio
     async def test_get_entries_none_id(self, storage_service):
-        """Test getting entries with None giveaway ID."""
+        """Test getting entries with None giveaway ID.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         entries = await storage_service.get_entries(None)
         assert entries == []
 
     @pytest.mark.asyncio
     async def test_has_entered_true(self, storage_service, sample_giveaway):
-        """Test checking if user has entered - true case."""
+        """Test checking if user has entered - true case.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         await storage_service.add_entry(created.id, 222222222)
 
@@ -215,7 +308,12 @@ class TestEntryOperations:
 
     @pytest.mark.asyncio
     async def test_has_entered_false(self, storage_service, sample_giveaway):
-        """Test checking if user has entered - false case."""
+        """Test checking if user has entered - false case.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
 
         result = await storage_service.has_entered(created.id, 222222222)
@@ -224,7 +322,12 @@ class TestEntryOperations:
 
     @pytest.mark.asyncio
     async def test_get_user_entries(self, storage_service, sample_giveaway):
-        """Test getting a user's entries."""
+        """Test getting a user's entries.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         await storage_service.add_entry(created.id, 222222222)
 
@@ -241,7 +344,12 @@ class TestWinnerOperations:
 
     @pytest.mark.asyncio
     async def test_add_winner(self, storage_service, sample_giveaway):
-        """Test adding a winner."""
+        """Test adding a winner.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
 
         await storage_service.add_winner(created.id, 222222222)
@@ -251,7 +359,12 @@ class TestWinnerOperations:
 
     @pytest.mark.asyncio
     async def test_get_winners(self, storage_service, sample_giveaway):
-        """Test getting winners for a giveaway."""
+        """Test getting winners for a giveaway.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         await storage_service.add_winner(created.id, 111111111)
         await storage_service.add_winner(created.id, 222222222)
@@ -264,13 +377,22 @@ class TestWinnerOperations:
 
     @pytest.mark.asyncio
     async def test_get_winners_none_id(self, storage_service):
-        """Test getting winners with None giveaway ID."""
+        """Test getting winners with None giveaway ID.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         winners = await storage_service.get_winners(None)
         assert winners == []
 
     @pytest.mark.asyncio
     async def test_clear_winners(self, storage_service, sample_giveaway):
-        """Test clearing winners for a giveaway."""
+        """Test clearing winners for a giveaway.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         created = await storage_service.create_giveaway(sample_giveaway)
         await storage_service.add_winner(created.id, 111111111)
         await storage_service.add_winner(created.id, 222222222)
@@ -286,7 +408,11 @@ class TestGuildConfigOperations:
 
     @pytest.mark.asyncio
     async def test_get_guild_config_creates_default(self, storage_service):
-        """Test getting guild config creates default if not exists."""
+        """Test getting guild config creates default if not exists.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         config = await storage_service.get_guild_config(123456789)
 
         assert config is not None
@@ -295,7 +421,11 @@ class TestGuildConfigOperations:
 
     @pytest.mark.asyncio
     async def test_get_guild_config_existing(self, storage_service):
-        """Test getting existing guild config."""
+        """Test getting existing guild config.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         # Create a config first
         config = GuildConfig(
             guild_id=123456789,
@@ -311,7 +441,11 @@ class TestGuildConfigOperations:
 
     @pytest.mark.asyncio
     async def test_save_guild_config(self, storage_service):
-        """Test saving guild config."""
+        """Test saving guild config.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         config = GuildConfig(
             guild_id=123456789,
             admin_role_ids=[111111111, 222222222],
@@ -324,7 +458,11 @@ class TestGuildConfigOperations:
 
     @pytest.mark.asyncio
     async def test_save_guild_config_update(self, storage_service):
-        """Test updating existing guild config."""
+        """Test updating existing guild config.
+
+        Args:
+            storage_service: Pytest fixture providing an initialized StorageService.
+        """
         config = GuildConfig(guild_id=123456789, admin_role_ids=[111111111])
         await storage_service.save_guild_config(config)
 
@@ -341,7 +479,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_create_tables_not_initialized(self, tmp_path):
-        """Test _create_tables raises when not initialized."""
+        """Test _create_tables raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -349,7 +491,12 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_create_giveaway_not_initialized(self, tmp_path, sample_giveaway):
-        """Test create_giveaway raises when not initialized."""
+        """Test create_giveaway raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -357,7 +504,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_get_giveaway_not_initialized(self, tmp_path):
-        """Test get_giveaway raises when not initialized."""
+        """Test get_giveaway raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -365,7 +516,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_get_giveaway_by_message_not_initialized(self, tmp_path):
-        """Test get_giveaway_by_message raises when not initialized."""
+        """Test get_giveaway_by_message raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -373,7 +528,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_get_active_giveaways_not_initialized(self, tmp_path):
-        """Test get_active_giveaways raises when not initialized."""
+        """Test get_active_giveaways raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -381,7 +540,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_get_scheduled_giveaways_not_initialized(self, tmp_path):
-        """Test get_scheduled_giveaways raises when not initialized."""
+        """Test get_scheduled_giveaways raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -389,7 +552,12 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_update_giveaway_not_initialized(self, tmp_path, sample_giveaway):
-        """Test update_giveaway raises when not initialized."""
+        """Test update_giveaway raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+            sample_giveaway: Pytest fixture providing a sample Giveaway object.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -397,7 +565,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_delete_giveaway_not_initialized(self, tmp_path):
-        """Test delete_giveaway raises when not initialized."""
+        """Test delete_giveaway raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -405,7 +577,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_add_entry_not_initialized(self, tmp_path):
-        """Test add_entry raises when not initialized."""
+        """Test add_entry raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -413,7 +589,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_remove_entry_not_initialized(self, tmp_path):
-        """Test remove_entry raises when not initialized."""
+        """Test remove_entry raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -421,7 +601,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_get_entries_not_initialized(self, tmp_path):
-        """Test get_entries raises when not initialized."""
+        """Test get_entries raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -429,7 +613,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_has_entered_not_initialized(self, tmp_path):
-        """Test has_entered raises when not initialized."""
+        """Test has_entered raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -437,7 +625,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_get_user_entries_not_initialized(self, tmp_path):
-        """Test get_user_entries raises when not initialized."""
+        """Test get_user_entries raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -445,7 +637,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_add_winner_not_initialized(self, tmp_path):
-        """Test add_winner raises when not initialized."""
+        """Test add_winner raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -453,7 +649,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_get_winners_not_initialized(self, tmp_path):
-        """Test get_winners raises when not initialized."""
+        """Test get_winners raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -461,7 +661,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_clear_winners_not_initialized(self, tmp_path):
-        """Test clear_winners raises when not initialized."""
+        """Test clear_winners raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):
@@ -469,7 +673,11 @@ class TestRuntimeErrors:
 
     @pytest.mark.asyncio
     async def test_get_guild_config_not_initialized(self, tmp_path):
-        """Test get_guild_config raises when not initialized."""
+        """Test get_guild_config raises when not initialized.
+
+        Args:
+            tmp_path: Pytest fixture providing a temporary directory path.
+        """
         storage = StorageService(tmp_path / "test.db")
         
         with pytest.raises(RuntimeError, match="Database not initialized"):

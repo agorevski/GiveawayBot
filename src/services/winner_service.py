@@ -116,11 +116,22 @@ class WinnerService:
         )
 
     async def get_winners(self, giveaway_id: int) -> List[int]:
-        """Get all winners for a giveaway."""
+        """Get all winners for a giveaway.
+
+        Args:
+            giveaway_id: The ID of the giveaway.
+
+        Returns:
+            List of winner user IDs.
+        """
         return await self.storage.get_winners(giveaway_id)
 
     async def clear_winners(self, giveaway_id: int) -> None:
-        """Clear all winners for a giveaway."""
+        """Clear all winners for a giveaway.
+
+        Args:
+            giveaway_id: The ID of the giveaway.
+        """
         await self.storage.clear_winners(giveaway_id)
 
     def format_winners_message(

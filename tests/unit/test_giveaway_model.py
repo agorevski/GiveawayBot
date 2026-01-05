@@ -10,7 +10,11 @@ class TestGiveawayModel:
     """Tests for the Giveaway dataclass."""
 
     def test_create_giveaway(self):
-        """Test creating a basic giveaway."""
+        """Test creating a basic giveaway.
+
+        Verifies that a Giveaway object is created with the correct default
+        values and that all required fields are properly assigned.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -31,7 +35,11 @@ class TestGiveawayModel:
         assert giveaway.cancelled is False
 
     def test_giveaway_status_active(self):
-        """Test that a new giveaway has active status."""
+        """Test that a new giveaway has active status.
+
+        Verifies that a newly created giveaway without scheduled_start
+        has ACTIVE status and correct is_active/is_ended flags.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -45,7 +53,11 @@ class TestGiveawayModel:
         assert giveaway.is_ended is False
 
     def test_giveaway_status_ended(self):
-        """Test ended giveaway status."""
+        """Test ended giveaway status.
+
+        Verifies that a giveaway with ended=True has ENDED status
+        and correct is_active/is_ended flags.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -60,7 +72,11 @@ class TestGiveawayModel:
         assert giveaway.is_ended is True
 
     def test_giveaway_status_cancelled(self):
-        """Test cancelled giveaway status."""
+        """Test cancelled giveaway status.
+
+        Verifies that a giveaway with cancelled=True has CANCELLED status
+        and correct is_active/is_ended flags.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -75,7 +91,11 @@ class TestGiveawayModel:
         assert giveaway.is_ended is True
 
     def test_giveaway_status_scheduled(self):
-        """Test scheduled giveaway status."""
+        """Test scheduled giveaway status.
+
+        Verifies that a giveaway with a future scheduled_start time
+        has SCHEDULED status and correct is_active/is_ended flags.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -90,7 +110,11 @@ class TestGiveawayModel:
         assert giveaway.is_ended is False
 
     def test_should_end(self):
-        """Test should_end property."""
+        """Test should_end property.
+
+        Verifies that should_end returns True when an active giveaway
+        has passed its end time, and False otherwise.
+        """
         # Active giveaway past end time
         giveaway = Giveaway(
             guild_id=123456789,
@@ -107,7 +131,12 @@ class TestGiveawayModel:
         assert giveaway.should_end is False
 
     def test_should_start(self):
-        """Test should_start property for scheduled giveaways."""
+        """Test should_start property for scheduled giveaways.
+
+        Verifies the should_start property behavior for scheduled and
+        active giveaways. A scheduled giveaway should_start only when
+        the scheduled_start time has been reached.
+        """
         # Scheduled giveaway that should start (scheduled_start is exactly now or just passed)
         # Note: should_start only returns True if status is SCHEDULED (scheduled_start > now)
         # and scheduled_start time has been reached. This is checked in the background task.
@@ -138,7 +167,11 @@ class TestGiveawayModel:
         assert active_giveaway.should_start is False
 
     def test_time_remaining(self):
-        """Test time_remaining property."""
+        """Test time_remaining property.
+
+        Verifies that time_remaining returns the correct number of seconds
+        until the giveaway ends, and None for ended giveaways.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -156,7 +189,11 @@ class TestGiveawayModel:
         assert giveaway.time_remaining is None
 
     def test_entry_count(self):
-        """Test entry_count property."""
+        """Test entry_count property.
+
+        Verifies that entry_count returns the correct number of entries
+        in the giveaway's entries list.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -171,7 +208,11 @@ class TestGiveawayModel:
         assert giveaway.entry_count == 5
 
     def test_to_dict(self):
-        """Test to_dict method."""
+        """Test to_dict method.
+
+        Verifies that to_dict returns a dictionary containing all
+        giveaway attributes with correct values.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -194,7 +235,11 @@ class TestGiveawayModel:
         assert data["cancelled"] is False
 
     def test_from_dict(self):
-        """Test from_dict classmethod."""
+        """Test from_dict classmethod.
+
+        Verifies that from_dict correctly creates a Giveaway object
+        from a dictionary representation.
+        """
         data = {
             "id": 1,
             "guild_id": 123456789,

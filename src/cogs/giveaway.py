@@ -19,6 +19,13 @@ class GiveawayCog(commands.Cog):
         giveaway_service: GiveawayService,
         storage: StorageService,
     ):
+        """Initialize the GiveawayCog.
+
+        Args:
+            bot: The Discord bot instance.
+            giveaway_service: Service for managing giveaway operations.
+            storage: Service for persistent storage operations.
+        """
         self.bot = bot
         self.giveaway_service = giveaway_service
         self.storage = storage
@@ -28,7 +35,11 @@ class GiveawayCog(commands.Cog):
         description="View all active giveaways in this server",
     )
     async def list_giveaways(self, interaction: discord.Interaction) -> None:
-        """List all active giveaways in the server."""
+        """List all active giveaways in the server.
+
+        Args:
+            interaction: The Discord interaction that triggered this command.
+        """
         if not interaction.guild:
             await interaction.response.send_message(
                 "❌ This command can only be used in a server.",
@@ -48,7 +59,11 @@ class GiveawayCog(commands.Cog):
         description="View your current giveaway entries",
     )
     async def my_entries(self, interaction: discord.Interaction) -> None:
-        """Show the user's current giveaway entries."""
+        """Show the user's current giveaway entries.
+
+        Args:
+            interaction: The Discord interaction that triggered this command.
+        """
         if not interaction.guild:
             await interaction.response.send_message(
                 "❌ This command can only be used in a server.",
@@ -66,7 +81,11 @@ class GiveawayCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self) -> None:
-        """Re-register persistent views when bot starts."""
+        """Re-register persistent views when bot starts.
+
+        Retrieves all active giveaways and registers their button views
+        to ensure entry buttons remain functional after bot restarts.
+        """
         # Get all active giveaways and register their views
         giveaways = await self.giveaway_service.get_active_giveaways()
 
@@ -77,7 +96,11 @@ class GiveawayCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    """Setup function for loading the cog."""
+    """Setup function for loading the cog.
+
+    Args:
+        bot: The Discord bot instance to add this cog to.
+    """
     storage = getattr(bot, "storage", None)
     giveaway_service = getattr(bot, "giveaway_service", None)
 

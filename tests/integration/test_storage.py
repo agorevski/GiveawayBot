@@ -12,7 +12,11 @@ class TestStorageServiceGiveaways:
 
     @pytest.mark.asyncio
     async def test_create_and_get_giveaway(self, storage_service):
-        """Test creating and retrieving a giveaway."""
+        """Test creating and retrieving a giveaway.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -31,7 +35,11 @@ class TestStorageServiceGiveaways:
 
     @pytest.mark.asyncio
     async def test_update_giveaway(self, storage_service):
-        """Test updating a giveaway."""
+        """Test updating a giveaway.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -52,7 +60,11 @@ class TestStorageServiceGiveaways:
 
     @pytest.mark.asyncio
     async def test_get_active_giveaways(self, storage_service):
-        """Test retrieving active giveaways for a guild."""
+        """Test retrieving active giveaways for a guild.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         guild_id = 123456789
 
         # Create active giveaway
@@ -83,7 +95,11 @@ class TestStorageServiceGiveaways:
 
     @pytest.mark.asyncio
     async def test_add_and_get_entries(self, storage_service):
-        """Test adding and retrieving giveaway entries."""
+        """Test adding and retrieving giveaway entries.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -106,7 +122,11 @@ class TestStorageServiceGiveaways:
 
     @pytest.mark.asyncio
     async def test_remove_entry(self, storage_service):
-        """Test removing a giveaway entry."""
+        """Test removing a giveaway entry.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -127,7 +147,11 @@ class TestStorageServiceGiveaways:
 
     @pytest.mark.asyncio
     async def test_check_entry_exists(self, storage_service):
-        """Test checking if an entry exists."""
+        """Test checking if an entry exists.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -144,7 +168,11 @@ class TestStorageServiceGiveaways:
 
     @pytest.mark.asyncio
     async def test_add_winners(self, storage_service):
-        """Test adding winners to a giveaway."""
+        """Test adding winners to a giveaway.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         giveaway = Giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -167,7 +195,11 @@ class TestStorageServiceGuildConfig:
 
     @pytest.mark.asyncio
     async def test_get_default_config(self, storage_service):
-        """Test getting config for a guild with no config."""
+        """Test getting config for a guild with no config.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         config = await storage_service.get_guild_config(123456789)
 
         assert config is not None
@@ -176,7 +208,11 @@ class TestStorageServiceGuildConfig:
 
     @pytest.mark.asyncio
     async def test_save_and_get_config(self, storage_service):
-        """Test saving and retrieving guild configuration."""
+        """Test saving and retrieving guild configuration.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         config = GuildConfig(
             guild_id=123456789,
             admin_role_ids=[111111111, 222222222],
@@ -189,7 +225,11 @@ class TestStorageServiceGuildConfig:
 
     @pytest.mark.asyncio
     async def test_update_config(self, storage_service):
-        """Test updating guild configuration."""
+        """Test updating guild configuration.
+
+        Args:
+            storage_service: The storage service fixture for database operations.
+        """
         config = GuildConfig(
             guild_id=123456789,
             admin_role_ids=[111111111],

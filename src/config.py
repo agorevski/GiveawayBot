@@ -27,7 +27,15 @@ class Config:
 
     @classmethod
     def from_env(cls) -> "Config":
-        """Create configuration from environment variables."""
+        """Create configuration from environment variables.
+
+        Returns:
+            Config: A new Config instance populated with values from
+                environment variables.
+
+        Raises:
+            ValueError: If DISCORD_TOKEN environment variable is not set.
+        """
         token = os.getenv("DISCORD_TOKEN")
         if not token:
             raise ValueError("DISCORD_TOKEN environment variable is required")
@@ -42,10 +50,21 @@ class Config:
         )
 
     def ensure_data_directory(self) -> None:
-        """Ensure the data directory exists."""
+        """Ensure the data directory exists.
+
+        Creates the parent directory of the database path if it does not
+        already exist, including any necessary intermediate directories.
+        """
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
 
 
 def get_config() -> Config:
-    """Get the bot configuration."""
+    """Get the bot configuration.
+
+    Returns:
+        Config: The bot configuration loaded from environment variables.
+
+    Raises:
+        ValueError: If required environment variables are not set.
+    """
     return Config.from_env()

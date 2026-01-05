@@ -15,25 +15,50 @@ class GuildConfig:
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def add_admin_role(self, role_id: int) -> bool:
-        """Add an admin role. Returns True if added, False if already exists."""
+        """Add an admin role to the guild configuration.
+
+        Args:
+            role_id: The Discord role ID to add as an admin role.
+
+        Returns:
+            True if the role was added, False if it already exists.
+        """
         if role_id not in self.admin_role_ids:
             self.admin_role_ids.append(role_id)
             return True
         return False
 
     def remove_admin_role(self, role_id: int) -> bool:
-        """Remove an admin role. Returns True if removed, False if not found."""
+        """Remove an admin role from the guild configuration.
+
+        Args:
+            role_id: The Discord role ID to remove from admin roles.
+
+        Returns:
+            True if the role was removed, False if it was not found.
+        """
         if role_id in self.admin_role_ids:
             self.admin_role_ids.remove(role_id)
             return True
         return False
 
     def is_admin_role(self, role_id: int) -> bool:
-        """Check if a role is an admin role."""
+        """Check if a role is an admin role.
+
+        Args:
+            role_id: The Discord role ID to check.
+
+        Returns:
+            True if the role is an admin role, False otherwise.
+        """
         return role_id in self.admin_role_ids
 
     def to_dict(self) -> dict:
-        """Convert to dictionary for storage."""
+        """Convert the guild configuration to a dictionary for storage.
+
+        Returns:
+            A dictionary representation of the guild configuration.
+        """
         return {
             "guild_id": self.guild_id,
             "admin_role_ids": json.dumps(self.admin_role_ids),
@@ -42,7 +67,14 @@ class GuildConfig:
 
     @classmethod
     def from_dict(cls, data: dict) -> "GuildConfig":
-        """Create a GuildConfig from a dictionary."""
+        """Create a GuildConfig instance from a dictionary.
+
+        Args:
+            data: A dictionary containing guild configuration data.
+
+        Returns:
+            A new GuildConfig instance populated with the provided data.
+        """
         admin_role_ids = data.get("admin_role_ids", "[]")
         if isinstance(admin_role_ids, str):
             admin_role_ids = json.loads(admin_role_ids)
@@ -61,5 +93,12 @@ class GuildConfig:
 
     @classmethod
     def default(cls, guild_id: int) -> "GuildConfig":
-        """Create a default configuration for a guild."""
+        """Create a default configuration for a guild.
+
+        Args:
+            guild_id: The Discord guild ID to create the configuration for.
+
+        Returns:
+            A new GuildConfig instance with default settings.
+        """
         return cls(guild_id=guild_id)

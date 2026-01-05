@@ -52,7 +52,14 @@ class TestUpdateGiveawayMessage:
 
     @pytest.mark.asyncio
     async def test_update_message_no_message_id(self, message_service):
-        """Test update when giveaway has no message ID."""
+        """Test update when giveaway has no message ID.
+
+        Args:
+            message_service: The message service fixture.
+
+        Returns:
+            None. Verifies that the method returns early without errors.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -68,7 +75,16 @@ class TestUpdateGiveawayMessage:
 
     @pytest.mark.asyncio
     async def test_update_message_channel_not_text(self, message_service, mock_bot, sample_ended_giveaway):
-        """Test update when channel is not a text channel."""
+        """Test update when channel is not a text channel.
+
+        Args:
+            message_service: The message service fixture.
+            mock_bot: The mock Discord bot fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that get_channel is called with the correct channel ID.
+        """
         mock_bot.get_channel.return_value = MagicMock(spec=discord.VoiceChannel)
 
         await message_service.update_giveaway_message(sample_ended_giveaway, [111])
@@ -77,7 +93,16 @@ class TestUpdateGiveawayMessage:
 
     @pytest.mark.asyncio
     async def test_update_message_success(self, message_service, mock_bot, sample_ended_giveaway):
-        """Test successful message update."""
+        """Test successful message update.
+
+        Args:
+            message_service: The message service fixture.
+            mock_bot: The mock Discord bot fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that message.edit is called once.
+        """
         channel = AsyncMock(spec=discord.TextChannel)
         message = AsyncMock(spec=discord.Message)
         channel.fetch_message.return_value = message
@@ -93,7 +118,16 @@ class TestUpdateGiveawayMessage:
 
     @pytest.mark.asyncio
     async def test_update_message_not_found(self, message_service, mock_bot, sample_ended_giveaway):
-        """Test update when message is not found."""
+        """Test update when message is not found.
+
+        Args:
+            message_service: The message service fixture.
+            mock_bot: The mock Discord bot fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that the method handles NotFound gracefully.
+        """
         channel = AsyncMock(spec=discord.TextChannel)
         channel.fetch_message.side_effect = discord.NotFound(MagicMock(), "Not found")
         mock_bot.get_channel.return_value = channel
@@ -104,7 +138,16 @@ class TestUpdateGiveawayMessage:
 
     @pytest.mark.asyncio
     async def test_update_message_host_not_found(self, message_service, mock_bot, sample_ended_giveaway):
-        """Test update when host user is not found."""
+        """Test update when host user is not found.
+
+        Args:
+            message_service: The message service fixture.
+            mock_bot: The mock Discord bot fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that edit is called with 'Unknown' as host.
+        """
         channel = AsyncMock(spec=discord.TextChannel)
         message = AsyncMock(spec=discord.Message)
         channel.fetch_message.return_value = message
@@ -122,7 +165,15 @@ class TestAnnounceWinners:
 
     @pytest.mark.asyncio
     async def test_announce_no_winners(self, message_service, sample_ended_giveaway):
-        """Test announcement when there are no winners."""
+        """Test announcement when there are no winners.
+
+        Args:
+            message_service: The message service fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that 'No valid entries' message is sent.
+        """
         channel = AsyncMock(spec=discord.TextChannel)
         channel.guild = MagicMock()
 
@@ -133,7 +184,16 @@ class TestAnnounceWinners:
 
     @pytest.mark.asyncio
     async def test_announce_with_winners(self, message_service, mock_bot, sample_ended_giveaway):
-        """Test announcement with winners."""
+        """Test announcement with winners.
+
+        Args:
+            message_service: The message service fixture.
+            mock_bot: The mock Discord bot fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that congratulations message includes winner mentions.
+        """
         channel = AsyncMock(spec=discord.TextChannel)
         channel.guild = MagicMock()
         channel.guild.name = "Test Guild"
@@ -154,7 +214,17 @@ class TestAnnounceWinners:
 
     @pytest.mark.asyncio
     async def test_announce_dm_winners(self, message_service, mock_bot, mock_winner_service, sample_ended_giveaway):
-        """Test that winners receive DMs."""
+        """Test that winners receive DMs.
+
+        Args:
+            message_service: The message service fixture.
+            mock_bot: The mock Discord bot fixture.
+            mock_winner_service: The mock winner service fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that DM is sent to winner.
+        """
         channel = AsyncMock(spec=discord.TextChannel)
         channel.guild = MagicMock()
         channel.guild.name = "Test Guild"
@@ -171,7 +241,16 @@ class TestAnnounceWinners:
 
     @pytest.mark.asyncio
     async def test_announce_dm_fails_gracefully(self, message_service, mock_bot, sample_ended_giveaway):
-        """Test that DM failures are handled gracefully."""
+        """Test that DM failures are handled gracefully.
+
+        Args:
+            message_service: The message service fixture.
+            mock_bot: The mock Discord bot fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that Forbidden exception does not raise.
+        """
         channel = AsyncMock(spec=discord.TextChannel)
         channel.guild = MagicMock()
         channel.guild.name = "Test Guild"
@@ -185,7 +264,16 @@ class TestAnnounceWinners:
 
     @pytest.mark.asyncio
     async def test_announce_user_not_found(self, message_service, mock_bot, sample_ended_giveaway):
-        """Test announcement when winner user is not found."""
+        """Test announcement when winner user is not found.
+
+        Args:
+            message_service: The message service fixture.
+            mock_bot: The mock Discord bot fixture.
+            sample_ended_giveaway: A sample ended giveaway fixture.
+
+        Returns:
+            None. Verifies that NotFound exception does not raise.
+        """
         channel = AsyncMock(spec=discord.TextChannel)
         channel.guild = MagicMock()
         channel.guild.name = "Test Guild"

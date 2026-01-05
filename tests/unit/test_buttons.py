@@ -19,7 +19,11 @@ class TestGiveawayEntryButton:
     """Tests for GiveawayEntryButton."""
 
     def test_button_initialization(self):
-        """Test button is initialized correctly."""
+        """Test button is initialized correctly.
+
+        Verifies that GiveawayEntryButton is created with the correct
+        giveaway ID, style, label, and custom_id.
+        """
         button = GiveawayEntryButton(giveaway_id=123)
 
         assert button.giveaway_id == 123
@@ -29,7 +33,11 @@ class TestGiveawayEntryButton:
 
     @pytest.mark.asyncio
     async def test_callback_no_service(self):
-        """Test callback when giveaway service is not available."""
+        """Test callback when giveaway service is not available.
+
+        Verifies that an ephemeral error message is sent when the
+        giveaway service is not configured on the client.
+        """
         button = GiveawayEntryButton(giveaway_id=123)
         
         interaction = MagicMock(spec=discord.Interaction)
@@ -46,7 +54,11 @@ class TestGiveawayEntryButton:
 
     @pytest.mark.asyncio
     async def test_callback_successful_entry(self):
-        """Test callback for successful entry."""
+        """Test callback for successful entry.
+
+        Verifies that when a user successfully enters a giveaway,
+        a success message with a checkmark is sent.
+        """
         button = GiveawayEntryButton(giveaway_id=123)
 
         # Mock interaction
@@ -81,7 +93,11 @@ class TestGiveawayEntryButton:
 
     @pytest.mark.asyncio
     async def test_callback_failed_entry(self):
-        """Test callback for failed entry."""
+        """Test callback for failed entry.
+
+        Verifies that when a user fails to enter a giveaway (e.g., already
+        entered), an error message with a cross mark is sent.
+        """
         button = GiveawayEntryButton(giveaway_id=123)
 
         interaction = MagicMock(spec=discord.Interaction)
@@ -101,7 +117,11 @@ class TestGiveawayEntryButton:
 
     @pytest.mark.asyncio
     async def test_callback_with_member_roles(self):
-        """Test callback extracts roles from member."""
+        """Test callback extracts roles from member.
+
+        Verifies that the user's role IDs are correctly extracted from the
+        member object and passed to the giveaway service.
+        """
         button = GiveawayEntryButton(giveaway_id=123)
 
         role1 = MagicMock()
@@ -127,7 +147,11 @@ class TestGiveawayEntryButton:
 
     @pytest.mark.asyncio
     async def test_callback_non_member_user(self):
-        """Test callback with non-member user."""
+        """Test callback with non-member user.
+
+        Verifies that when the interaction user is a User (not a Member),
+        an empty role list is passed to the giveaway service.
+        """
         button = GiveawayEntryButton(giveaway_id=123)
 
         interaction = MagicMock(spec=discord.Interaction)
@@ -152,7 +176,11 @@ class TestGiveawayLeaveButton:
     """Tests for GiveawayLeaveButton."""
 
     def test_button_initialization(self):
-        """Test button is initialized correctly."""
+        """Test button is initialized correctly.
+
+        Verifies that GiveawayLeaveButton is created with the correct
+        giveaway ID, style, label, and custom_id.
+        """
         button = GiveawayLeaveButton(giveaway_id=456)
 
         assert button.giveaway_id == 456
@@ -162,7 +190,11 @@ class TestGiveawayLeaveButton:
 
     @pytest.mark.asyncio
     async def test_callback_no_service(self):
-        """Test callback when giveaway service is not available."""
+        """Test callback when giveaway service is not available.
+
+        Verifies that an error message is sent when the giveaway service
+        is not configured on the client.
+        """
         button = GiveawayLeaveButton(giveaway_id=123)
 
         interaction = MagicMock(spec=discord.Interaction)
@@ -176,7 +208,11 @@ class TestGiveawayLeaveButton:
 
     @pytest.mark.asyncio
     async def test_callback_successful_leave(self):
-        """Test callback for successful leave."""
+        """Test callback for successful leave.
+
+        Verifies that when a user successfully leaves a giveaway,
+        a success message with a checkmark is sent.
+        """
         button = GiveawayLeaveButton(giveaway_id=123)
 
         interaction = MagicMock(spec=discord.Interaction)
@@ -207,7 +243,11 @@ class TestGiveawayLeaveButton:
 
     @pytest.mark.asyncio
     async def test_callback_failed_leave(self):
-        """Test callback for failed leave."""
+        """Test callback for failed leave.
+
+        Verifies that when a user fails to leave a giveaway (e.g., not
+        entered), an error message with a cross mark is sent.
+        """
         button = GiveawayLeaveButton(giveaway_id=123)
 
         interaction = MagicMock(spec=discord.Interaction)
@@ -230,7 +270,11 @@ class TestGiveawayEntryView:
 
     @pytest.mark.asyncio
     async def test_view_with_enter_only(self):
-        """Test view with just enter button."""
+        """Test view with just enter button.
+
+        Verifies that the view is created as a persistent view with
+        only the enter button when include_leave is not specified.
+        """
         view = GiveawayEntryView(giveaway_id=123)
 
         assert view.timeout is None  # Persistent view
@@ -239,7 +283,11 @@ class TestGiveawayEntryView:
 
     @pytest.mark.asyncio
     async def test_view_with_leave_button(self):
-        """Test view with both enter and leave buttons."""
+        """Test view with both enter and leave buttons.
+
+        Verifies that the view contains both enter and leave buttons
+        when include_leave is set to True.
+        """
         view = GiveawayEntryView(giveaway_id=123, include_leave=True)
 
         assert len(view.children) == 2
@@ -252,7 +300,11 @@ class TestEndedGiveawayView:
 
     @pytest.mark.asyncio
     async def test_view_initialization(self):
-        """Test ended view is initialized correctly."""
+        """Test ended view is initialized correctly.
+
+        Verifies that the ended view is created as a persistent view
+        with a single disabled button labeled "Ended".
+        """
         view = EndedGiveawayView()
 
         assert view.timeout is None

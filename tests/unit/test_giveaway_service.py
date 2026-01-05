@@ -9,57 +9,93 @@ class TestParseDuration:
     """Tests for the parse_duration method."""
 
     def test_parse_seconds(self):
-        """Test parsing seconds."""
+        """Test parsing seconds from various string formats.
+
+        Verifies that duration strings with second suffixes (s, sec, second,
+        seconds) are correctly parsed to their integer second values.
+        """
         assert GiveawayService.parse_duration("30s") == 30
         assert GiveawayService.parse_duration("30sec") == 30
         assert GiveawayService.parse_duration("30 seconds") == 30
         assert GiveawayService.parse_duration("1 second") == 1
 
     def test_parse_minutes(self):
-        """Test parsing minutes."""
+        """Test parsing minutes from various string formats.
+
+        Verifies that duration strings with minute suffixes (m, min, minute,
+        minutes) are correctly converted to seconds.
+        """
         assert GiveawayService.parse_duration("5m") == 300
         assert GiveawayService.parse_duration("5min") == 300
         assert GiveawayService.parse_duration("5 minutes") == 300
         assert GiveawayService.parse_duration("1 minute") == 60
 
     def test_parse_hours(self):
-        """Test parsing hours."""
+        """Test parsing hours from various string formats.
+
+        Verifies that duration strings with hour suffixes (h, hr, hour, hours)
+        are correctly converted to seconds.
+        """
         assert GiveawayService.parse_duration("2h") == 7200
         assert GiveawayService.parse_duration("2hr") == 7200
         assert GiveawayService.parse_duration("2 hours") == 7200
         assert GiveawayService.parse_duration("1 hour") == 3600
 
     def test_parse_days(self):
-        """Test parsing days."""
+        """Test parsing days from various string formats.
+
+        Verifies that duration strings with day suffixes (d, day, days)
+        are correctly converted to seconds.
+        """
         assert GiveawayService.parse_duration("1d") == 86400
         assert GiveawayService.parse_duration("1 day") == 86400
         assert GiveawayService.parse_duration("7 days") == 604800
 
     def test_parse_weeks(self):
-        """Test parsing weeks."""
+        """Test parsing weeks from various string formats.
+
+        Verifies that duration strings with week suffixes (w, week, weeks)
+        are correctly converted to seconds.
+        """
         assert GiveawayService.parse_duration("1w") == 604800
         assert GiveawayService.parse_duration("1 week") == 604800
         assert GiveawayService.parse_duration("2 weeks") == 1209600
 
     def test_parse_combined(self):
-        """Test parsing combined durations."""
+        """Test parsing combined duration strings.
+
+        Verifies that compound duration strings containing multiple time units
+        (e.g., '1d2h30m') are correctly summed to their total seconds.
+        """
         assert GiveawayService.parse_duration("1d2h") == 86400 + 7200
         assert GiveawayService.parse_duration("1d 2h 30m") == 86400 + 7200 + 1800
         assert GiveawayService.parse_duration("1h30m") == 3600 + 1800
 
     def test_parse_number_only(self):
-        """Test parsing plain numbers (assumed to be minutes)."""
+        """Test parsing plain numbers without unit suffixes.
+
+        Verifies that numeric strings without explicit time units are
+        interpreted as minutes and correctly converted to seconds.
+        """
         assert GiveawayService.parse_duration("30") == 1800  # 30 minutes
         assert GiveawayService.parse_duration("60") == 3600  # 60 minutes
 
     def test_parse_invalid(self):
-        """Test parsing invalid duration strings."""
+        """Test parsing invalid duration strings.
+
+        Verifies that malformed or unrecognized duration strings return None
+        instead of raising an exception.
+        """
         assert GiveawayService.parse_duration("") is None
         assert GiveawayService.parse_duration("invalid") is None
         assert GiveawayService.parse_duration("abc123") is None
 
     def test_parse_case_insensitive(self):
-        """Test that parsing is case insensitive."""
+        """Test that duration parsing is case insensitive.
+
+        Verifies that uppercase, lowercase, and mixed-case duration strings
+        are all parsed correctly.
+        """
         assert GiveawayService.parse_duration("1H") == 3600
         assert GiveawayService.parse_duration("1D") == 86400
         assert GiveawayService.parse_duration("1 HOUR") == 3600
@@ -69,7 +105,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_create_giveaway(self, giveaway_service):
-        """Test creating a giveaway."""
+        """Test creating a giveaway with valid parameters.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that a giveaway is created with correct attributes including
+        ID, guild_id, channel_id, prize, winner_count, and active status.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -88,7 +131,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_get_giveaway(self, giveaway_service):
-        """Test retrieving a giveaway."""
+        """Test retrieving a giveaway by its ID.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that a created giveaway can be retrieved and contains
+        the expected data.
+        """
         created = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -105,13 +155,26 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_get_nonexistent_giveaway(self, giveaway_service):
-        """Test retrieving a non-existent giveaway."""
+        """Test retrieving a giveaway that does not exist.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that attempting to retrieve a non-existent giveaway returns None.
+        """
         result = await giveaway_service.get_giveaway(99999)
         assert result is None
 
     @pytest.mark.asyncio
     async def test_enter_giveaway(self, giveaway_service):
-        """Test entering a giveaway."""
+        """Test successfully entering a giveaway.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that a user can enter an active giveaway and receives a
+        success response with an appropriate message.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -131,7 +194,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_enter_giveaway_twice(self, giveaway_service):
-        """Test that a user can't enter twice."""
+        """Test that a user cannot enter the same giveaway twice.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that duplicate entries are rejected with an appropriate
+        error message indicating the user has already entered.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -159,7 +229,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_enter_giveaway_role_requirement(self, giveaway_service):
-        """Test role requirement for giveaway entry."""
+        """Test role requirement enforcement for giveaway entry.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that users without the required role are rejected, while
+        users with the required role can successfully enter.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -190,7 +267,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_end_giveaway(self, giveaway_service):
-        """Test ending a giveaway."""
+        """Test ending an active giveaway.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that an active giveaway can be ended and its ended flag
+        is set to True.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -206,7 +290,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_cancel_giveaway(self, giveaway_service):
-        """Test cancelling a giveaway."""
+        """Test cancelling an active giveaway.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that an active giveaway can be cancelled and its cancelled
+        flag is set to True.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -224,7 +315,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_cancel_nonexistent_giveaway(self, giveaway_service):
-        """Test cancelling a non-existent giveaway."""
+        """Test cancelling a giveaway that does not exist.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that attempting to cancel a non-existent giveaway returns
+        failure with an appropriate 'not found' message.
+        """
         success, message = await giveaway_service.cancel_giveaway(99999)
 
         assert success is False
@@ -232,7 +330,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_cancel_already_ended_giveaway(self, giveaway_service):
-        """Test cancelling an already ended giveaway."""
+        """Test cancelling a giveaway that has already ended.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that attempting to cancel an ended giveaway returns failure
+        with an appropriate 'already ended' message.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -250,7 +355,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_leave_giveaway(self, giveaway_service):
-        """Test leaving a giveaway."""
+        """Test leaving a giveaway after entering.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that a user who has entered a giveaway can successfully
+        leave and receives a confirmation message.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -268,7 +380,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_leave_giveaway_not_entered(self, giveaway_service):
-        """Test leaving a giveaway when not entered."""
+        """Test leaving a giveaway without having entered.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that attempting to leave a giveaway the user never entered
+        returns failure.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -283,7 +402,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_leave_nonexistent_giveaway(self, giveaway_service):
-        """Test leaving a non-existent giveaway."""
+        """Test leaving a giveaway that does not exist.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that attempting to leave a non-existent giveaway returns
+        failure with an appropriate 'not found' message.
+        """
         success, message = await giveaway_service.leave_giveaway(99999, 222222222)
 
         assert success is False
@@ -291,7 +417,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_enter_nonexistent_giveaway(self, giveaway_service):
-        """Test entering a non-existent giveaway."""
+        """Test entering a giveaway that does not exist.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that attempting to enter a non-existent giveaway returns
+        failure with an appropriate 'not found' message.
+        """
         success, message = await giveaway_service.enter_giveaway(99999, 222222222, [])
 
         assert success is False
@@ -299,7 +432,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_enter_ended_giveaway(self, giveaway_service):
-        """Test entering an ended giveaway."""
+        """Test entering a giveaway that has already ended.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that attempting to enter an ended giveaway returns failure
+        with an appropriate 'ended' message.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -317,14 +457,27 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_end_nonexistent_giveaway(self, giveaway_service):
-        """Test ending a non-existent giveaway."""
+        """Test ending a giveaway that does not exist.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that attempting to end a non-existent giveaway returns None.
+        """
         result = await giveaway_service.end_giveaway(99999)
 
         assert result is None
 
     @pytest.mark.asyncio
     async def test_set_message_id(self, giveaway_service):
-        """Test setting message ID on a giveaway."""
+        """Test setting the Discord message ID on a giveaway.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that a message ID can be associated with a giveaway and
+        persists when the giveaway is retrieved.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -340,7 +493,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_get_active_giveaways(self, giveaway_service):
-        """Test getting active giveaways."""
+        """Test retrieving all active giveaways for a guild.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that multiple active giveaways in a guild can be retrieved
+        and the returned list contains at least the expected count.
+        """
         guild_id = 123456789
 
         await giveaway_service.create_giveaway(
@@ -364,7 +524,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_get_giveaway_by_message(self, giveaway_service):
-        """Test getting a giveaway by message ID."""
+        """Test retrieving a giveaway by its Discord message ID.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that a giveaway can be looked up using its associated
+        Discord message ID after the message ID has been set.
+        """
         giveaway = await giveaway_service.create_giveaway(
             guild_id=123456789,
             channel_id=987654321,
@@ -382,7 +549,14 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_start_scheduled_giveaway(self, giveaway_service):
-        """Test starting a scheduled giveaway."""
+        """Test starting a giveaway that was scheduled for later.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that a scheduled giveaway can be manually started and
+        its scheduled_start field is cleared upon starting.
+        """
         from datetime import datetime, timedelta, timezone
 
         giveaway = await giveaway_service.create_giveaway(
@@ -403,7 +577,15 @@ class TestGiveawayServiceAsync:
 
     @pytest.mark.asyncio
     async def test_create_giveaway_with_scheduled_start(self, giveaway_service):
-        """Test creating a giveaway with scheduled start."""
+        """Test creating a giveaway with a future scheduled start time.
+
+        Args:
+            giveaway_service: Fixture providing the GiveawayService instance.
+
+        Verifies that a giveaway can be created with a scheduled start time
+        and that the ends_at field is correctly calculated as
+        scheduled_start + duration.
+        """
         from datetime import datetime, timedelta, timezone
 
         scheduled = datetime.now(timezone.utc) + timedelta(hours=2)

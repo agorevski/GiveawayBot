@@ -64,21 +64,47 @@ class GiveawayService:
         return await self.storage.create_giveaway(giveaway)
 
     async def get_giveaway(self, giveaway_id: int) -> Optional[Giveaway]:
-        """Get a giveaway by ID."""
+        """Get a giveaway by ID.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway.
+
+        Returns:
+            The giveaway if found, None otherwise.
+        """
         return await self.storage.get_giveaway(giveaway_id)
 
     async def get_giveaway_by_message(self, message_id: int) -> Optional[Giveaway]:
-        """Get a giveaway by its Discord message ID."""
+        """Get a giveaway by its Discord message ID.
+
+        Args:
+            message_id: The Discord message ID associated with the giveaway.
+
+        Returns:
+            The giveaway if found, None otherwise.
+        """
         return await self.storage.get_giveaway_by_message(message_id)
 
     async def get_active_giveaways(
         self, guild_id: Optional[int] = None
     ) -> List[Giveaway]:
-        """Get all active giveaways, optionally filtered by guild."""
+        """Get all active giveaways, optionally filtered by guild.
+
+        Args:
+            guild_id: Optional Discord guild ID to filter by.
+
+        Returns:
+            List of active giveaways.
+        """
         return await self.storage.get_active_giveaways(guild_id)
 
     async def set_message_id(self, giveaway: Giveaway, message_id: int) -> None:
-        """Set the Discord message ID for a giveaway."""
+        """Set the Discord message ID for a giveaway.
+
+        Args:
+            giveaway: The giveaway to update.
+            message_id: The Discord message ID to associate with the giveaway.
+        """
         giveaway.message_id = message_id
         await self.storage.update_giveaway(giveaway)
 
@@ -126,6 +152,10 @@ class GiveawayService:
     async def leave_giveaway(self, giveaway_id: int, user_id: int) -> Tuple[bool, str]:
         """Remove a user from a giveaway.
 
+        Args:
+            giveaway_id: The giveaway to leave.
+            user_id: The user attempting to leave.
+
         Returns:
             Tuple of (success, message).
         """
@@ -145,6 +175,9 @@ class GiveawayService:
     async def end_giveaway(self, giveaway_id: int) -> Optional[Giveaway]:
         """End a giveaway and mark it as ended.
 
+        Args:
+            giveaway_id: The unique identifier of the giveaway to end.
+
         Returns:
             The updated giveaway, or None if not found.
         """
@@ -160,6 +193,9 @@ class GiveawayService:
 
     async def cancel_giveaway(self, giveaway_id: int) -> Tuple[bool, str]:
         """Cancel a giveaway.
+
+        Args:
+            giveaway_id: The unique identifier of the giveaway to cancel.
 
         Returns:
             Tuple of (success, message).
@@ -178,21 +214,41 @@ class GiveawayService:
         return True, "Giveaway cancelled."
 
     async def get_giveaways_to_end(self) -> List[Giveaway]:
-        """Get all giveaways that should be ended now."""
+        """Get all giveaways that should be ended now.
+
+        Returns:
+            List of giveaways that have passed their end time.
+        """
         active_giveaways = await self.storage.get_active_giveaways()
         return [g for g in active_giveaways if g.should_end]
 
     async def get_giveaways_to_start(self) -> List[Giveaway]:
-        """Get all scheduled giveaways that should start now."""
+        """Get all scheduled giveaways that should start now.
+
+        Returns:
+            List of scheduled giveaways that have passed their start time.
+        """
         scheduled = await self.storage.get_scheduled_giveaways()
         return [g for g in scheduled if g.should_start]
 
     async def get_user_entries(self, guild_id: int, user_id: int) -> List[Giveaway]:
-        """Get all active giveaways a user has entered in a guild."""
+        """Get all active giveaways a user has entered in a guild.
+
+        Args:
+            guild_id: The Discord guild ID.
+            user_id: The user ID to check entries for.
+
+        Returns:
+            List of active giveaways the user has entered.
+        """
         return await self.storage.get_user_entries(guild_id, user_id)
 
     async def start_scheduled_giveaway(self, giveaway: Giveaway) -> None:
-        """Start a scheduled giveaway by clearing its scheduled_start time."""
+        """Start a scheduled giveaway by clearing its scheduled_start time.
+
+        Args:
+            giveaway: The scheduled giveaway to start.
+        """
         giveaway.scheduled_start = None
         await self.storage.update_giveaway(giveaway)
 
@@ -207,6 +263,9 @@ class GiveawayService:
         - "1d", "1 day", "1 days"
         - "1w", "1 week", "1 weeks"
         - Combinations: "1d 2h 30m", "1d2h30m"
+
+        Args:
+            duration_str: The duration string to parse.
 
         Returns:
             Total seconds, or None if parsing failed.

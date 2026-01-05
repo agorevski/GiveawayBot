@@ -39,6 +39,15 @@ class AdminCog(commands.Cog):
         storage: StorageService,
         message_service: GiveawayMessageService,
     ):
+        """Initialize the AdminCog with required services.
+
+        Args:
+            bot: The Discord bot instance.
+            giveaway_service: Service for managing giveaway operations.
+            winner_service: Service for selecting and managing winners.
+            storage: Service for persistent data storage.
+            message_service: Service for sending giveaway messages.
+        """
         self.bot = bot
         self.giveaway_service = giveaway_service
         self.winner_service = winner_service
@@ -46,7 +55,17 @@ class AdminCog(commands.Cog):
         self.message_service = message_service
 
     async def _check_admin(self, interaction: discord.Interaction) -> bool:
-        """Check if user has admin permissions."""
+        """Check if user has admin permissions for giveaway management.
+
+        Verifies that the user is either a Discord administrator or has
+        a configured giveaway admin role.
+
+        Args:
+            interaction: The Discord interaction to check permissions for.
+
+        Returns:
+            True if the user has admin permissions, False otherwise.
+        """
         if not interaction.guild:
             await interaction.response.send_message(
                 "❌ This command can only be used in a server.",
@@ -93,7 +112,20 @@ class AdminCog(commands.Cog):
         required_role: Optional[discord.Role] = None,
         channel: Optional[discord.TextChannel] = None,
     ) -> None:
-        """Create a new giveaway."""
+        """Create a new giveaway with the specified parameters.
+
+        Args:
+            interaction: The Discord interaction that triggered the command.
+            prize: The prize to be awarded to the winner(s).
+            duration: Duration string (e.g., '1h', '30m', '1d', '1w').
+            winners: Number of winners to select. Defaults to 1.
+            required_role: Optional role required to enter the giveaway.
+            channel: Optional channel to post the giveaway in.
+                Defaults to the current channel.
+
+        Returns:
+            None.
+        """
         if not await self._check_admin(interaction):
             return
 
@@ -168,7 +200,18 @@ class AdminCog(commands.Cog):
         interaction: discord.Interaction,
         giveaway_id: int,
     ) -> None:
-        """End a giveaway and select winners."""
+        """End a giveaway early and select winners.
+
+        Ends the specified giveaway before its scheduled end time,
+        selects winners from eligible entries, and announces them.
+
+        Args:
+            interaction: The Discord interaction that triggered the command.
+            giveaway_id: The unique identifier of the giveaway to end.
+
+        Returns:
+            None.
+        """
         if not await self._check_admin(interaction):
             return
 
@@ -228,7 +271,18 @@ class AdminCog(commands.Cog):
         interaction: discord.Interaction,
         giveaway_id: int,
     ) -> None:
-        """Cancel a giveaway without selecting winners."""
+        """Cancel a giveaway without selecting winners.
+
+        Cancels the specified giveaway and updates the original message
+        to reflect the cancellation. No winners are selected.
+
+        Args:
+            interaction: The Discord interaction that triggered the command.
+            giveaway_id: The unique identifier of the giveaway to cancel.
+
+        Returns:
+            None.
+        """
         if not await self._check_admin(interaction):
             return
 
@@ -276,7 +330,19 @@ class AdminCog(commands.Cog):
         giveaway_id: int,
         count: int = 1,
     ) -> None:
-        """Reroll winners for an ended giveaway."""
+        """Reroll winners for an ended giveaway.
+
+        Selects new winners from the remaining eligible entries,
+        excluding previous winners.
+
+        Args:
+            interaction: The Discord interaction that triggered the command.
+            giveaway_id: The unique identifier of the giveaway to reroll.
+            count: Number of new winners to select. Defaults to 1.
+
+        Returns:
+            None.
+        """
         if not await self._check_admin(interaction):
             return
 
@@ -325,7 +391,17 @@ class AdminCog(commands.Cog):
 
     @giveaway_group.command(name="list", description="List all active giveaways")
     async def list_giveaways(self, interaction: discord.Interaction) -> None:
-        """List all active giveaways in the server."""
+        """List all active giveaways in the server.
+
+        Displays an embed with information about all currently
+        running giveaways in the guild.
+
+        Args:
+            interaction: The Discord interaction that triggered the command.
+
+        Returns:
+            None.
+        """
         if not await self._check_admin(interaction):
             return
 
@@ -360,7 +436,20 @@ class AdminCog(commands.Cog):
         action: str,
         role: Optional[discord.Role] = None,
     ) -> None:
-        """Configure giveaway admin roles."""
+        """Configure giveaway admin roles for the server.
+
+        Allows server administrators to add, remove, or list roles
+        that have permission to manage giveaways.
+
+        Args:
+            interaction: The Discord interaction that triggered the command.
+            action: The action to perform ('add', 'remove', or 'list').
+            role: The role to add or remove. Required for 'add' and 'remove'
+                actions.
+
+        Returns:
+            None.
+        """
         if not interaction.guild:
             await interaction.response.send_message(
                 "❌ This command can only be used in a server.",
@@ -430,7 +519,17 @@ class AdminCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    """Setup function for loading the cog."""
+    """Set up the AdminCog extension for the bot.
+
+    Called by the bot's load_extension method. Retrieves required
+    services from the bot instance and registers the cog.
+
+    Args:
+        bot: The Discord bot instance to add the cog to.
+
+    Returns:
+        None.
+    """
     # This will be called by the bot's load_extension
     # Services should be attached to the bot instance
     storage = getattr(bot, "storage", None)

@@ -19,7 +19,11 @@ class TestCreateGiveawayEmbed:
     """Tests for create_giveaway_embed function."""
 
     def test_active_giveaway_embed(self):
-        """Test creating embed for active giveaway."""
+        """Test creating embed for active giveaway.
+
+        Creates a giveaway with future end time and verifies the embed
+        has correct title, description, color, winner count, and host info.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -39,7 +43,11 @@ class TestCreateGiveawayEmbed:
         assert "TestHost" in embed.footer.text
 
     def test_scheduled_giveaway_embed(self):
-        """Test creating embed for scheduled giveaway."""
+        """Test creating embed for scheduled giveaway.
+
+        Creates a giveaway with a future scheduled start time and verifies
+        the embed has blue color and shows scheduled status in fields.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -56,7 +64,11 @@ class TestCreateGiveawayEmbed:
         assert any("Scheduled" in f.value for f in embed.fields)
 
     def test_ended_status_embed(self):
-        """Test creating embed for ended giveaway shows grey color."""
+        """Test creating embed for ended giveaway shows grey color.
+
+        Creates a giveaway that has ended and verifies the embed
+        displays with greyple color to indicate ended status.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -72,7 +84,11 @@ class TestCreateGiveawayEmbed:
         assert embed.color == discord.Color.greyple()
 
     def test_giveaway_embed_with_role(self):
-        """Test creating embed with required role."""
+        """Test creating embed with required role.
+
+        Creates a giveaway with a required role and verifies the embed
+        displays the role name in one of its fields.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -88,7 +104,11 @@ class TestCreateGiveawayEmbed:
         assert any("VIP" in f.value for f in embed.fields)
 
     def test_giveaway_embed_entries(self):
-        """Test embed shows correct entry count."""
+        """Test embed shows correct entry count.
+
+        Creates a giveaway with 3 entries and verifies the embed
+        displays an Entries field with the correct count of 3.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -104,7 +124,11 @@ class TestCreateGiveawayEmbed:
         assert any(f.name == "Entries" and f.value == "3" for f in embed.fields)
 
     def test_giveaway_embed_time_remaining(self):
-        """Test embed shows time remaining."""
+        """Test embed shows time remaining.
+
+        Creates an active giveaway and verifies the embed includes
+        a Time Remaining field to display countdown information.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -123,7 +147,11 @@ class TestCreateEndedEmbed:
     """Tests for create_ended_embed function."""
 
     def test_ended_embed_with_winners(self):
-        """Test creating ended embed with winners."""
+        """Test creating ended embed with winners.
+
+        Creates an ended giveaway with a single winner and verifies
+        the embed shows correct title, prize, color, and winner mention.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -145,7 +173,11 @@ class TestCreateEndedEmbed:
         assert "<@111111111>" in embed.fields[0].value
 
     def test_ended_embed_multiple_winners(self):
-        """Test creating ended embed with multiple winners."""
+        """Test creating ended embed with multiple winners.
+
+        Creates an ended giveaway with 3 winners and verifies the embed
+        displays all winner mentions in the Winner field.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -165,7 +197,11 @@ class TestCreateEndedEmbed:
         assert "<@222222222>" in winner_field.value
 
     def test_ended_embed_no_winners(self):
-        """Test creating ended embed with no winners."""
+        """Test creating ended embed with no winners.
+
+        Creates an ended giveaway with an empty winner list and verifies
+        the embed displays a 'No valid entries' message.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -182,7 +218,11 @@ class TestCreateEndedEmbed:
         assert any("No valid entries" in f.value for f in embed.fields)
 
     def test_ended_embed_shows_entry_count(self):
-        """Test ended embed shows total entries."""
+        """Test ended embed shows total entries.
+
+        Creates an ended giveaway with 3 entries and verifies the embed
+        includes a Total Entries field to show participation count.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -202,7 +242,11 @@ class TestCreateCancelledEmbed:
     """Tests for create_cancelled_embed function."""
 
     def test_cancelled_embed(self):
-        """Test creating cancelled embed."""
+        """Test creating cancelled embed.
+
+        Creates a cancelled giveaway and verifies the embed has correct
+        title, strikethrough prize text, red color, and host info.
+        """
         giveaway = Giveaway(
             id=1,
             guild_id=123456789,
@@ -226,7 +270,11 @@ class TestCreateListEmbed:
     """Tests for create_list_embed function."""
 
     def test_list_embed_with_giveaways(self):
-        """Test creating list embed with giveaways."""
+        """Test creating list embed with giveaways.
+
+        Creates a list embed with 2 giveaways and verifies the embed
+        includes the guild name in title and has 2 fields for each giveaway.
+        """
         giveaways = [
             Giveaway(
                 id=1,
@@ -252,13 +300,21 @@ class TestCreateListEmbed:
         assert len(embed.fields) == 2
 
     def test_list_embed_empty(self):
-        """Test creating list embed with no giveaways."""
+        """Test creating list embed with no giveaways.
+
+        Creates a list embed with an empty giveaway list and verifies
+        the description indicates there are no active giveaways.
+        """
         embed = create_list_embed([], "Test Guild")
 
         assert "No active giveaways" in embed.description
 
     def test_list_embed_scheduled_status(self):
-        """Test list embed shows scheduled status."""
+        """Test list embed shows scheduled status.
+
+        Creates a list embed with a scheduled giveaway and verifies
+        the field name includes 'Scheduled' to indicate pending start.
+        """
         giveaways = [
             Giveaway(
                 id=1,
@@ -276,7 +332,11 @@ class TestCreateListEmbed:
         assert "Scheduled" in embed.fields[0].name
 
     def test_list_embed_truncates_at_10(self):
-        """Test list embed truncates at 10 giveaways."""
+        """Test list embed truncates at 10 giveaways.
+
+        Creates a list embed with 15 giveaways and verifies it shows
+        only 10 fields with a footer indicating 5 more giveaways.
+        """
         giveaways = [
             Giveaway(
                 id=i,
@@ -299,7 +359,11 @@ class TestCreateEntriesEmbed:
     """Tests for create_entries_embed function."""
 
     def test_entries_embed_with_entries(self):
-        """Test creating entries embed with entries."""
+        """Test creating entries embed with entries.
+
+        Creates an entries embed with 1 giveaway and verifies the embed
+        includes user name in title, has purple color, and shows 1 field.
+        """
         giveaways = [
             Giveaway(
                 id=1,
@@ -318,13 +382,21 @@ class TestCreateEntriesEmbed:
         assert len(embed.fields) == 1
 
     def test_entries_embed_empty(self):
-        """Test creating entries embed with no entries."""
+        """Test creating entries embed with no entries.
+
+        Creates an entries embed with an empty list and verifies
+        the description indicates the user hasn't entered any giveaways.
+        """
         embed = create_entries_embed([], "TestUser")
 
         assert "haven't entered" in embed.description
 
     def test_entries_embed_truncates_at_10(self):
-        """Test entries embed truncates at 10 entries."""
+        """Test entries embed truncates at 10 entries.
+
+        Creates an entries embed with 15 giveaways and verifies it shows
+        only 10 fields with a footer indicating 5 more entries.
+        """
         giveaways = [
             Giveaway(
                 id=i,
